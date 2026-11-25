@@ -94,7 +94,7 @@ nav a:hover{color:var(--ink)}
 .ctrl span{min-width:92px;padding:6px 12px;border-radius:999px;background:rgba(255,250,240,.82);text-align:center;white-space:nowrap;font:500 20px "Cormorant Garamond",serif;color:#4a3a28}
 .arr{width:48px;height:48px;border-radius:50%;border:1px solid var(--gold);background:rgba(255,250,240,.75);color:#5d4214;font-size:18px}
 .arr:hover{background:var(--gold);color:#fff}
-.skip{position:absolute;left:50%;transform:translateX(-50%);bottom:78px;pointer-events:auto;font-size:13px;color:#7d6d5c;text-decoration:none;padding:10px;transition:opacity .5s}
+.skip{position:absolute;left:50%;transform:translateX(-50%);bottom:78px;pointer-events:auto;font-size:13px;color:#7d6d5c;text-decoration:none;padding:8px 14px;border-radius:999px;background:rgba(255,250,240,.85);transition:opacity .5s}
 @media(max-width:1100px){.hint{display:none}}
 
 /* ---------- sale ---------- */
@@ -125,7 +125,7 @@ footer{padding:24px max(5vw,16px);font-size:13px;color:var(--mute);border-top:1p
 @media(max-width:780px){.cols{grid-template-columns:minmax(0,1fr)}}
 
 /* ---------- visore ---------- */
-dialog{border:0;padding:0;width:min(1120px,94vw);max-height:92vh;background:#f7f0e4;color:#2b2118}
+dialog{border:0;padding:0;overflow:auto;width:min(1120px,94vw);max-height:92vh;background:#f7f0e4;color:#2b2118}
 dialog::backdrop{background:rgba(43,33,24,.72)}
 .view{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:0}
 .vart{padding:clamp(18px,3vw,40px);background:radial-gradient(ellipse at 50% 30%,#fff8ea,#ecdfc8);display:grid;place-items:center}
@@ -136,6 +136,7 @@ dialog::backdrop{background:rgba(43,33,24,.72)}
 .info{padding:30px 26px}
 .info h3{font-size:34px;margin-bottom:14px}
 .info dl{margin:0;display:grid;gap:12px}
+.refimg img{display:block;max-height:150px;max-width:100%;width:auto;margin-top:6px;box-shadow:0 6px 14px -8px rgba(70,45,15,.6)}.refimg small{display:block;margin-top:6px;font-size:12px;color:#7d6d5c;font-style:italic}
 .info dt{font-size:13px;color:#7d6d5c}.info dd{margin:0}
 .dbar{display:flex;gap:10px;margin-top:24px}
 .x{position:absolute;top:10px;right:10px;z-index:2}
@@ -237,6 +238,8 @@ const W=[
 {id:"tank-man",t:"La resistenza dei Meganoidi contro Daitarn III",y:2023,s:"mv",ar:"3/2",r:"Daitarn III, Meganoide",ref:"“Tank Man”, piazza Tienanmen, 1989",f:"SmartX 100×66 · D-bond 54×36 cm"}
 ];
 // opere con immagine già caricata in img/
+// opere di riferimento in pubblico dominio (dipinti) in img/ref/
+const REF=new Set(["creazione","jeegonda","viandante","goldrake-vega","santagata","bacio","gladiatori","arcangeli","optimus","ultima-cena"]);
 const HAS=new Set(["pieta","creazione","jeegonda","discobolo","viandante","perseo","nettuno","goldrake-vega","santagata","bacio","gladiatori","ercole","arcangeli","fuga","optimus","ultima-cena","venus","legacy","fab-four","dream","tank-man"]);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 // immagine in img/<id>.jpg; se manca resta la tela con il titolo
@@ -270,7 +273,7 @@ const wrap=(g,text,x,y,maxW,lh)=>{const words=String(text).split(" ");let line="
 async function build(){
  renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
  renderer.outputEncoding=THREE.sRGBEncoding;renderer.setPixelRatio(Math.min(2,devicePixelRatio||1));
- scene=new THREE.Scene();scene.background=new THREE.Color("#f2e9da");scene.fog=new THREE.Fog("#f2e9da",3200,12000);
+ scene=new THREE.Scene();scene.background=new THREE.Color("#ece5d8");scene.fog=new THREE.Fog("#ece5d8",3400,12500);
  camera=new THREE.PerspectiveCamera(52,1,10,20000);camera.rotation.order="YXZ";
  scene.add(new THREE.AmbientLight(0xfff6e6,.85));const dl=new THREE.DirectionalLight(0xfff1d6,.75);dl.position.set(0,1,.6);scene.add(dl);
  const aniso=renderer.capabilities.getMaxAnisotropy();
@@ -286,11 +289,15 @@ async function build(){
  const wallMat=new THREE.MeshBasicMaterial({map:wallTex});
  const wallGeo=new THREE.PlaneGeometry(END,CEIL-FLOOR);
  for(const s of [-1,1]){const m=new THREE.Mesh(wallGeo,wallMat);m.position.set(s*HALF,(CEIL+FLOOR)/2,-END/2);m.rotation.y=-s*Math.PI/2;scene.add(m)}
- const floorTex=canvasTex(1024,256,(g,w,h)=>{const gr=g.createLinearGradient(0,0,w,0);gr.addColorStop(0,"#e2d3b9");gr.addColorStop(.3,"#ecdfc8");gr.addColorStop(.5,"#efe4cf");gr.addColorStop(.7,"#ecdfc8");gr.addColorStop(1,"#e2d3b9");g.fillStyle=gr;g.fillRect(0,0,w,h);
-  g.fillStyle="rgba(150,120,85,.28)";for(let x=60;x<1120;x+=250)g.fillRect(x/1120*w,0,2,h);g.fillRect(0,h-2,w,2)});
- floorTex.wrapT=THREE.RepeatWrapping;floorTex.repeat.set(1,END/250);floorTex.anisotropy=aniso;
+ const floorTex=canvasTex(1024,512,(g,w,h)=>{const tones=["#9b7553","#936d4c","#a07a57","#8f6a49","#986f4f","#a3805c","#916b4b","#9a7351"];const n=8,bw=w/n;
+  for(let k=0;k<n;k++){g.fillStyle=tones[k];g.fillRect(k*bw,0,bw,h);const j=((k*37)%8)/8*h;g.fillStyle="rgba(60,38,20,.45)";g.fillRect(k*bw,j,bw,2);g.fillRect(k*bw,(j+h/2)%h,bw,2);
+   g.fillStyle="rgba(255,235,200,.06)";for(let y=0;y<h;y+=7)g.fillRect(k*bw+((y*13)%bw),y,bw*.35,1);g.fillStyle="rgba(60,38,20,.55)";g.fillRect(k*bw,0,2,h)}
+  const sh=g.createLinearGradient(0,0,w,0);sh.addColorStop(0,"rgba(40,25,10,.18)");sh.addColorStop(.5,"rgba(255,240,215,.10)");sh.addColorStop(1,"rgba(40,25,10,.18)");g.fillStyle=sh;g.fillRect(0,0,w,h)});
+ floorTex.wrapT=THREE.RepeatWrapping;floorTex.repeat.set(1,END/560);floorTex.anisotropy=aniso;
  const fl=new THREE.Mesh(new THREE.PlaneGeometry(2*HALF,END),new THREE.MeshBasicMaterial({map:floorTex}));fl.rotation.x=-Math.PI/2;fl.position.set(0,FLOOR,-END/2);scene.add(fl);
- const ceilTex=canvasTex(512,256,(g,w,h)=>{g.fillStyle="#fffbf2";g.fillRect(0,0,w,h);g.fillStyle="#efe5d3";g.fillRect(0,0,w*.18,h);g.fillRect(w*.82,0,w*.18,h);g.fillStyle="#e8dcc8";g.fillRect(w*.18,0,w*.64,h*40/250)});
+ const ceilTex=canvasTex(512,256,(g,w,h)=>{g.fillStyle="#d4dee1";g.fillRect(0,0,w,h);g.fillStyle="#c3d0d4";g.fillRect(0,0,w*.18,h);g.fillRect(w*.82,0,w*.18,h);
+  const sk=g.createLinearGradient(w*.18,0,w*.82,0);sk.addColorStop(0,"#e9f0f1");sk.addColorStop(.5,"#f8fbfa");sk.addColorStop(1,"#e9f0f1");g.fillStyle=sk;g.fillRect(w*.2,h*.2,w*.6,h*.8);
+  g.fillStyle="#b7c6cb";g.fillRect(w*.18,0,w*.64,h*.16);g.fillStyle="#a9bac0";g.fillRect(w*.18,h*.16,w*.64,2);g.fillRect(w*.18,0,2,h);g.fillRect(w*.82-2,0,2,h)});
  ceilTex.wrapT=THREE.RepeatWrapping;ceilTex.repeat.set(1,END/250);ceilTex.anisotropy=aniso;
  const cl=new THREE.Mesh(new THREE.PlaneGeometry(2*HALF,END),new THREE.MeshBasicMaterial({map:ceilTex}));cl.rotation.x=Math.PI/2;cl.position.set(0,CEIL,-END/2);scene.add(cl);
  // parete di fondo con simbolo e scritta
@@ -356,7 +363,7 @@ let at=0;const NW=W.length;
 const show=i=>{at=(i+NW)%NW;const w=W[at],a=document.getElementById("dArt");
  a.innerHTML=`<span class="art" style="--ar:${w.ar}">${art(w,1)}</span>`;
  document.getElementById("dT").textContent=w.t;
- document.getElementById("dL").innerHTML=[["Opera di riferimento",w.ref],["Robot",w.r],["Anno",w.y],["Serie",w.s==="s1"?"Masterpieces":"Multiverse"],["Formati",w.f],["Tiratura",(w.ed||"9 esemplari per formato")+", numerati e firmati, con certificato"]].filter(([,v])=>v).map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")};
+ document.getElementById("dL").innerHTML=[["Opera di riferimento",w.ref],["Robot",w.r],["Anno",w.y],["Serie",w.s==="s1"?"Masterpieces":"Multiverse"],["Formati",w.f],["Tiratura",(w.ed||"9 esemplari per formato")+", numerati e firmati, con certificato"]].filter(([,v])=>v).map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")+(REF.has(w.id)?`<div class="refimg"><dt>L'originale</dt><dd><img src="img/ref/${w.id}.jpg" alt="${esc(w.ref)}" loading="lazy"><small>${esc(w.ref)}</small></dd></div>`:"")};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-i]");if(!b)return;show(+b.dataset.i);try{dlg.showModal()}catch(_){dlg.setAttribute("open","")}});
 document.getElementById("close").addEventListener("click",()=>dlg.close());
 document.getElementById("dPrev").addEventListener("click",()=>show(at-1));
