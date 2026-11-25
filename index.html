@@ -216,7 +216,7 @@ dialog::backdrop{background:rgba(43,33,24,.72)}
 const W=[
 {id:"pieta",t:"La Pietà",y:2022,s:"s1",ar:"3/2",r:"Getter Dragon, Gundam Blitz",ref:"La Pietà, Michelangelo, 1497–99",f:"SmartX 90×60 · D-bond 54×36 cm"},
 {id:"creazione",t:"La Creazione di Adamo",y:2022,s:"s1",ar:"3/2",r:"Gundam Age, Grande Mazinga",ref:"La Creazione di Adamo, Michelangelo, 1511",f:"SmartX 90×60 · D-bond 54×36 cm"},
-{id:"jeegonda",t:"La Jeegonda",y:2022,s:"s1",ar:"4/5",r:"Jeeg Robot d'Acciaio",ref:"La Gioconda, Leonardo da Vinci, 1503",f:"SmartX 63×80 · D-bond 40×50 · Materica 50×62 cm"},
+{id:"jeegonda",t:"La Jeegonda",y:2022,s:"s1",ar:"4/5",r:"Jeeg Robot d'Acciaio",ref:"La Gioconda, Leonardo da Vinci, 1503",ed:"9 esemplari per SmartX e D-bond · Materica 50×62: 5 esemplari",f:"SmartX 63×80 · D-bond 40×50 · Materica 50×62 cm"},
 {id:"discobolo",t:"Il Discobolo",y:2022,s:"s1",ar:"3/2",r:"Getter Robot",ref:"Il Discobolo, Mirone, 455 a.C.",f:"SmartX 90×60 · D-bond 54×36 cm"},
 {id:"viandante",t:"Viandante sul mare di nebbia",y:2022,s:"s1",ar:"4/5",r:"Gundam Red Astray",ref:"Caspar David Friedrich, 1818",f:"SmartX 64×80 · D-bond 40×50 cm"},
 {id:"perseo",t:"Mazinga con la testa del Generale Nero",y:2022,s:"s1",ar:"3/2",r:"Grande Mazinga, Generale Nero",ref:"Perseo con la testa di Medusa, Cellini, 1554",f:"SmartX 90×60 · D-bond 54×36 cm"},
@@ -229,7 +229,7 @@ const W=[
 {id:"arcangeli",t:"I tre Arcangeli",y:2023,s:"s1",ar:"4/5",r:"Getter Robot, Mazinga Zeta, Grande Mazinga, Goldrake",ref:"Pala dei tre Arcangeli, Marco d'Oggiono, 1516",f:"SmartX 64×80 · D-bond 80×100 e 40×50 cm"},
 {id:"fuga",t:"Fuga d'Amore",y:2024,s:"s1",ar:"3/2",r:"Minerva-X, Mazinga Zeta",ref:"Amore e Psiche, Antonio Canova, 1793",f:"SmartX 90×60 · D-bond 54×36 cm"},
 {id:"optimus",t:"Optimus Mundi",y:2024,s:"s1",ar:"4/5",r:"Optimus Prime",ref:"Salvator Mundi, Leonardo da Vinci, 1515",f:"SmartX 64×80 · D-bond 40×50 cm"},
-{id:"ultima-cena",t:"L'Ultima Cena",y:2025,s:"s1",ar:"16/9",r:"Zambot III, Trider G7, Daitarn III, Gundam, Getter, Mazinga Z, Goldrake, Grande Mazinga, Jeeg, Voltron, Optimus Prime, Valkyrie, Daltanious",ref:"Il Cenacolo, Leonardo da Vinci, 1498",f:"SmartX 100×56 · D-bond 54×30 · Materica 70×40 · Materica 150×80 cm (5 esemplari numerati e firmati)"},
+{id:"ultima-cena",t:"L'Ultima Cena",y:2025,s:"s1",ar:"16/9",r:"Zambot III, Trider G7, Daitarn III, Gundam, Getter, Mazinga Z, Goldrake, Grande Mazinga, Jeeg, Voltron, Optimus Prime, Valkyrie, Daltanious",ref:"Il Cenacolo, Leonardo da Vinci, 1498",f:"SmartX 100×56 · D-bond 54×30 · Materica 70×40 · Materica 150×80 cm",ed:"9 esemplari per SmartX e D-bond · Materica 70×40: 3 esemplari · Materica 150×80: 5 esemplari"},
 {id:"venus",t:"La Nascita di Venus-A",y:2025,s:"s1",ar:"16/9",r:"Mazinga Z, Minerva-X, Venus-A, Aphrodite-A",ref:"La Nascita di Venere, Botticelli, 1485",f:"SmartX 100×56 e 70×40 · D-bond 54×30 cm"},
 {id:"legacy",t:"The Legacy",y:2026,s:"s1",ar:"4/5",r:"Shin Getter, Getter Robot",ref:"Narciso, Caravaggio, 1597–99",f:"SmartX 64×80 · D-bond 40×50 cm"},
 {id:"fab-four",t:"The Fab Four",y:2023,s:"mv",ar:"16/9",r:"Goldrake, Grande Mazinga, Mazinga Z, Jeeg",ref:"Abbey Road, The Beatles, 1969",f:"SmartX 100×56 · D-bond 54×30 cm"},
@@ -356,7 +356,7 @@ let at=0;const NW=W.length;
 const show=i=>{at=(i+NW)%NW;const w=W[at],a=document.getElementById("dArt");
  a.innerHTML=`<span class="art" style="--ar:${w.ar}">${art(w,1)}</span>`;
  document.getElementById("dT").textContent=w.t;
- document.getElementById("dL").innerHTML=[["Opera di riferimento",w.ref],["Robot",w.r],["Anno",w.y],["Serie",w.s==="s1"?"Masterpieces":"Multiverse"],["Formati",w.f]].filter(([,v])=>v).map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")};
+ document.getElementById("dL").innerHTML=[["Opera di riferimento",w.ref],["Robot",w.r],["Anno",w.y],["Serie",w.s==="s1"?"Masterpieces":"Multiverse"],["Formati",w.f],["Tiratura",(w.ed||"9 esemplari per formato")+", numerati e firmati, con certificato"]].filter(([,v])=>v).map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-i]");if(!b)return;show(+b.dataset.i);try{dlg.showModal()}catch(_){dlg.setAttribute("open","")}});
 document.getElementById("close").addEventListener("click",()=>dlg.close());
 document.getElementById("dPrev").addEventListener("click",()=>show(at-1));
