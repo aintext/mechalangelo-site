@@ -123,9 +123,10 @@ dialog{border:0;padding:0;width:min(1120px,94vw);max-height:92vh;background:#f7f
 dialog::backdrop{background:rgba(43,33,24,.72)}
 .view{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:0}
 .vart{padding:clamp(18px,3vw,40px);background:radial-gradient(ellipse at 50% 30%,#fff8ea,#ecdfc8);display:grid;place-items:center}
-.vart .frame{padding:20px;width:100%}
-.vart .art{width:100%;aspect-ratio:var(--ar,4/5);max-height:66vh}
-.vart .art img{object-fit:contain;background:#e9dcc4}
+.vart .frame{padding:20px;display:inline-block;max-width:100%}
+.vart .art{display:block}
+.vart .art img{position:relative;display:block;width:auto;height:auto;max-width:100%;max-height:66vh}
+.vart .art:not(:has(img)){width:min(520px,70vw);aspect-ratio:var(--ar,4/5)}
 .info{padding:30px 26px}
 .info h3{font-size:34px;margin-bottom:14px}
 .info dl{margin:0;display:grid;gap:12px}
@@ -185,7 +186,7 @@ dialog::backdrop{background:rgba(43,33,24,.72)}
     </div>
     <ul class="facts">
       <li><span>Opere in catalogo</span><b id="nWorks">—</b></li>
-      <li><span>Anni</span><b>2022 – 2025</b></li>
+      <li><span>Anni</span><b>2022 – 2026</b></li>
       <li><span>Serie</span><b>Capolavori · Multiverse</b></li>
       <li><span>Mostra personale</span><b>CEC Cecina, 2025</b></li>
       <li><span>Tirature</span><b>Numerate e firmate, con certificato</b></li>
@@ -227,13 +228,16 @@ const W=[
 {id:"optimus",t:"Optimus Mundi",y:2024,s:"s1",ar:"4/5",r:"Optimus Prime",ref:"Salvator Mundi, Leonardo da Vinci, 1515",f:"SmartX 64×80 cm"},
 {id:"ultima-cena",t:"L'Ultima Cena",y:2025,s:"s1",ar:"16/9",r:"Zambot III, Trider G7, Daitarn III, Gundam, Getter, Mazinga Z, Goldrake, Grande Mazinga, Jeeg, Voltron, Optimus Prime, Valkyrie, Daltanious",ref:"Il Cenacolo, Leonardo da Vinci, 1498",f:"SmartX 100×56 · D-bond 54×30 · Materica 70×40 · Materica 150×80 cm (5 esemplari numerati e firmati)"},
 {id:"venus",t:"La Nascita di Venus-A",y:2025,s:"s1",ar:"16/9",r:"Mazinga Z, Minerva-X, Venus-A, Aphrodite-A",ref:"La Nascita di Venere, Botticelli, 1485",f:"SmartX 100×56 e 70×40 · D-bond 54×30 cm"},
+{id:"legacy",t:"The Legacy",y:2026,s:"s1",ar:"4/5",r:"Shin Getter, Getter Robot",ref:"Narciso, Caravaggio, 1597–99",f:""},
 {id:"fab-four",t:"The Fab Four",y:2023,s:"mv",ar:"16/9",r:"Goldrake, Grande Mazinga, Mazinga Z, Jeeg",ref:"Abbey Road, The Beatles, 1969",f:"SmartX 100×56 cm"},
 {id:"dream",t:"“I Have a Dream”",y:2023,s:"mv",ar:"3/2",r:"Daitarn III, Zambot III, Gundam, Grande Mazinga, Jeeg, Daltanious",ref:"Discorso di Martin Luther King Jr., 1963",f:"SmartX 100×66 cm"},
 {id:"tank-man",t:"La resistenza dei Meganoidi contro Daitarn III",y:2023,s:"mv",ar:"3/2",r:"Daitarn III, Meganoide",ref:"“Tank Man”, piazza Tienanmen, 1989",f:"SmartX 100×66 cm"}
 ];
+// opere con immagine già caricata in img/
+const HAS=new Set(["pieta","creazione","jeegonda","discobolo","viandante","perseo","nettuno","goldrake-vega","santagata","bacio","gladiatori","ercole","arcangeli","fuga","optimus","ultima-cena","venus","legacy"]);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 // immagine in img/<id>.jpg; se manca resta la tela con il titolo
-const art=(w,yr)=>`<span class="ph" aria-hidden="true"><span><b>${esc(w.t)}</b>${yr?`<small>${w.y}</small>`:""}</span></span><img src="img/${w.id}.jpg" alt="${esc(w.t)} — ${esc(w.ref)}" loading="lazy" onerror="this.remove()">`;
+const art=(w,yr)=>`<span class="ph" aria-hidden="true"><span><b>${esc(w.t)}</b>${yr?`<small>${w.y}</small>`:""}</span></span><img src="img/${w.id}.jpg" alt="${esc(w.t)} — ${esc(w.ref)}" loading="lazy" decoding="async" onerror="this.remove()">`;
 document.getElementById("nWorks").textContent=W.length;
 
 // --- indice delle opere ---
@@ -246,10 +250,10 @@ document.querySelectorAll(".chips button").forEach(b=>b.addEventListener("click"
 
 // --- corridoio 3D: lo scroll fa camminare, la camera si volta verso ogni quadro ---
 const hall=document.getElementById("corridoio"),stage=document.getElementById("stage"),world=document.getElementById("world");
-const N=W.length,HALF=560,TOP=-560,BOT=520,GAP=820,FH=400,FOC=980;
+const C=W.map((w,i)=>({w,i})).filter(o=>HAS.has(o.w.id)),N=C.length,HALF=560,TOP=-560,BOT=520,GAP=820,FH=400,FOC=980;
 const depth=i=>1400+i*GAP,side=i=>i%2?1:-1,END=depth(N-1)+1600;
 const cams=[{c:0,y:0}];
-W.forEach((w,i)=>cams.push({c:depth(i)-FOC,y:side(i)*Math.atan2(HALF,FOC)*180/Math.PI*.9}));
+C.forEach((o,i)=>cams.push({c:depth(i)-FOC,y:side(i)*Math.atan2(HALF,FOC)*180/Math.PI*.9}));
 cams.push({c:END-1300,y:0});
 hall.style.height=`calc(100svh + ${(N+1)*50}vh)`;
 let h="";const SEG=1600;
@@ -259,8 +263,8 @@ for(let z=0;z<END;z+=SEG){const L=Math.min(SEG,END-z)+2;
  h+=`<div class="fl" data-z="${z+L/2}" style="width:${HALF*2}px;height:${L}px;transform:translate3d(${-HALF}px,${BOT}px,${-z}px) rotateX(-90deg)"></div>`;
  h+=`<div class="cl" data-z="${z+L/2}" style="width:${HALF*2}px;height:${L}px;transform:translate3d(${-HALF}px,${TOP}px,${-z}px) rotateX(-90deg)"></div>`}
 h+=`<div class="endw" data-z="${END}" style="width:${HALF*2}px;height:${BOT-TOP}px;transform:translate3d(${-HALF}px,${TOP}px,${-END}px)"><div><b>Mechalangelo</b><span>Fine della galleria · scendi per l'elenco delle opere</span></div></div>`;
-h+=W.map((w,i)=>{const[a,b]=w.ar.split("/").map(Number);let ht=FH,wd=FH*a/b;if(wd>660){wd=660;ht=wd*b/a}const fw=wd+48;
- return `<div class="wf" data-z="${depth(i)}" style="width:${fw}px;transform:translate3d(${side(i)*(HALF-2)-fw/2}px,${-ht/2-110}px,${-depth(i)}px) rotateY(${-side(i)*90}deg)"><button class="frame" data-i="${i}" aria-label="Apri ${esc(w.t)}"><span class="art" style="width:${wd}px;height:${ht}px">${art(w,1)}</span></button><div class="plate"><h3>${esc(w.t)}</h3><em>${esc(w.ref)}</em><br>${esc(w.r)} · ${w.y}</div></div>`}).join("");
+h+=C.map(({w,i:wi},i)=>{const[a,b]=w.ar.split("/").map(Number);let ht=FH,wd=FH*a/b;if(wd>660){wd=660;ht=wd*b/a}const fw=wd+48;
+ return `<div class="wf" data-z="${depth(i)}" style="width:${fw}px;transform:translate3d(${side(i)*(HALF-2)-fw/2}px,${-ht/2-110}px,${-depth(i)}px) rotateY(${-side(i)*90}deg)"><button class="frame" data-i="${wi}" aria-label="Apri ${esc(w.t)}"><span class="art" style="width:${wd}px;height:${ht}px">${art(w,1)}</span></button><div class="plate"><h3>${esc(w.t)}</h3><em>${esc(w.ref)}</em><br>${esc(w.r)} · ${w.y}</div></div>`}).join("");
 world.innerHTML=h;
 const els=[...world.children].map(e=>({e,z:+e.dataset.z}));
 const intro=document.getElementById("intro"),hint=document.getElementById("hint"),skip=document.getElementById("skip"),cnt=document.getElementById("count");
@@ -293,11 +297,11 @@ addEventListener("pointermove",e=>{if(!dn)return;const dx=e.clientX-dn.x,dy=e.cl
 addEventListener("pointerup",()=>{if(!dn)return;dn=null;stage.classList.remove("drag")});
 
 // --- visore: avvicinarsi a un quadro ---
-let at=0;
-const show=i=>{at=(i+N)%N;const w=W[at],a=document.getElementById("dArt");
+let at=0;const NW=W.length;
+const show=i=>{at=(i+NW)%NW;const w=W[at],a=document.getElementById("dArt");
  a.innerHTML=`<span class="art" style="--ar:${w.ar}">${art(w,1)}</span>`;
  document.getElementById("dT").textContent=w.t;
- document.getElementById("dL").innerHTML=[["Opera di riferimento",w.ref],["Robot",w.r],["Anno",w.y],["Serie",w.s==="s1"?"I capolavori":"Multiverse"],["Formati",w.f]].map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")};
+ document.getElementById("dL").innerHTML=[["Opera di riferimento",w.ref],["Robot",w.r],["Anno",w.y],["Serie",w.s==="s1"?"I capolavori":"Multiverse"],["Formati",w.f]].filter(([,v])=>v).map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-i]");if(!b)return;if(moved&&b.closest(".stage")){moved=false;return}show(+b.dataset.i);try{dlg.showModal()}catch(_){dlg.setAttribute("open","")}});
 document.getElementById("close").addEventListener("click",()=>dlg.close());
 document.getElementById("dPrev").addEventListener("click",()=>show(at-1));
