@@ -6,7 +6,7 @@
 <title>Mechalangelo — un progetto di Giuseppe Suma</title>
 <link rel="icon" href="img/simbolo-oro.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* VOICE: un grande museo classico, quieto e raffinato; l'ironia mecha sta nelle opere, non nell'impaginazione.
    IDEA: la galleria di una gipsoteca: pareti di gesso, lucernario, pavimento in marmo, quadri in cornici dorate.
@@ -110,8 +110,8 @@ nav a:hover{color:var(--ink)}
 .tile .frame::after{inset:9px;border-width:2px}
 .tile .art{aspect-ratio:4/3}
 .tile .ph b{font-size:21px}
-.tile strong{display:block;margin-top:14px;font:600 21px/1.15 "Cormorant Garamond",serif}
-.tile span.r{display:block;font-size:14px;color:var(--mute);margin-top:3px}
+.tile strong{display:block;margin-top:14px;font:600 17px/1.2 Cinzel,"Cormorant Garamond",serif;letter-spacing:.02em}
+.tile span.r{display:block;font:400 12.5px/1.35 Cinzel,serif;color:var(--mute);margin-top:4px}
 
 /* ---------- progetto ---------- */
 .proj{background:light-dark(#efe5d4,#29221b)}
@@ -134,7 +134,7 @@ dialog::backdrop{background:rgba(43,33,24,.72)}
 .vart .art img{position:relative;display:block;width:auto;height:auto;max-width:100%;max-height:66vh}
 .vart .art:not(:has(img)){width:min(520px,70vw);aspect-ratio:var(--ar,4/5)}
 .info{padding:30px 26px}
-.info h3{font-size:34px;margin-bottom:14px}
+.info h3{font:600 28px/1.15 Cinzel,"Cormorant Garamond",serif;margin-bottom:14px;letter-spacing:.02em}
 .info dl{margin:0;display:grid;gap:12px}
 .refimg img{display:block;max-height:150px;max-width:100%;width:auto;margin-top:6px;box-shadow:0 6px 14px -8px rgba(70,45,15,.6)}.refimg small{display:block;margin-top:6px;font-size:12px;color:#7d6d5c;font-style:italic}.refimg small.cr{font-style:normal;margin-top:2px;font-size:11px}.refimg small.cr a{color:inherit}
 .info dt{font-size:13px;color:#7d6d5c}.info dd{margin:0}
@@ -279,7 +279,7 @@ async function build(){
  camera=new THREE.PerspectiveCamera(52,1,10,20000);camera.rotation.order="YXZ";
  scene.add(new THREE.AmbientLight(0xfff6e6,.85));const dl=new THREE.DirectionalLight(0xfff1d6,.75);dl.position.set(0,1,.6);scene.add(dl);
  const aniso=renderer.capabilities.getMaxAnisotropy();
- await document.fonts.ready;
+ await Promise.all([document.fonts.load('600 40px Cinzel'),document.fonts.load('400 28px Cinzel'),document.fonts.load('400 24px Jost')]).catch(()=>{});await document.fonts.ready;
  const circ=await loadImg("img/circuito-fascia.svg?v=2");
  // pareti: gesso, cornice in alto, fascia e battiscopa con il circuito
  const wallTex=canvasTex(2048,1024,(g,w,h)=>{const y=v=>v/1080*h;
@@ -326,8 +326,8 @@ async function build(){
   bar(wd+2*B,B,0,cy+ht/2+B/2);bar(wd+2*B,B,0,cy-ht/2-B/2);bar(B,ht,-(wd/2+B/2),cy);bar(B,ht,wd/2+B/2,cy);
   const PW=330,PH=118;
   const pt=canvasTex(1320,472,(g,W2,H2)=>{g.scale(2,2);const w2=W2/2,h2=H2/2;const gr=g.createLinearGradient(0,0,0,h2);gr.addColorStop(0,"#fffaf0");gr.addColorStop(1,"#f3e9d6");g.fillStyle=gr;g.fillRect(0,0,w2,h2);g.strokeStyle="#d8c6a4";g.lineWidth=2;g.strokeRect(1,1,w2-2,h2-2);
-   g.textAlign="center";g.fillStyle="#2b2118";g.font='600 46px "Cormorant Garamond", Georgia, serif';let y=58;y=wrap(g,w.t,w2/2,y,w2-40,46);
-   g.font='italic 500 34px "Cormorant Garamond", Georgia, serif';g.fillStyle="#3a2c1c";y=wrap(g,w.ref,w2/2,y,w2-40,36);
+   g.textAlign="center";g.fillStyle="#2b2118";g.font='600 34px Cinzel, Georgia, serif';let y=56;y=wrap(g,w.t,w2/2,y,w2-40,40);
+   g.font='400 22px Cinzel, Georgia, serif';g.fillStyle="#3a2c1c";y=wrap(g,w.ref,w2/2,y+4,w2-40,28);
    g.font='400 24px Jost, sans-serif';g.fillStyle="#5a4632";wrap(g,`${w.r} · ${w.y}`,w2/2,y+2,w2-40,28)});
   pt.anisotropy=aniso;const pl=new THREE.Mesh(new THREE.PlaneGeometry(PW,PH),new THREE.MeshBasicMaterial({map:pt}));pl.position.set(0,cy-ht/2-B-30-PH/2,4);G.add(pl);
   scene.add(G)});
