@@ -73,8 +73,8 @@ nav a:hover{color:var(--ink)}
 /* quadro appeso */
 .wf{position:absolute;display:flex;flex-direction:column;align-items:center;gap:30px}
 .wf::before{content:"";position:absolute;left:-40%;right:-40%;top:-30%;height:95%;background:radial-gradient(ellipse at 50% 0,rgba(255,244,214,.95),rgba(255,240,205,0) 68%);pointer-events:none}
-.frame{position:relative;display:block;border:0;padding:22px;cursor:pointer;background:linear-gradient(135deg,#b8913f,#e6c97f 45%,#c9a453 70%,#a9822f);box-shadow:0 30px 44px -22px rgba(70,45,15,.5),inset 0 0 0 1px rgba(255,240,200,.6),inset 0 0 0 22px rgba(0,0,0,0),inset 0 2px 6px rgba(255,245,215,.35)}
-.frame::after{content:"";position:absolute;inset:22px;box-shadow:inset 0 0 0 1px rgba(90,60,20,.35);pointer-events:none}
+.frame{position:relative;display:block;padding:10px;cursor:pointer;background:#2b2118;border:9px solid #a8896a;border-color:#b39474 #977a5c #8f7356 #ab8c6c;box-shadow:0 30px 44px -22px rgba(70,45,15,.5)}
+.frame::after{content:none}
 .art{display:block;position:relative;overflow:hidden;background:#e9dcc4}
 .art img{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover}
 .ph{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:18px;color:#5a4632;
@@ -104,8 +104,8 @@ nav a:hover{color:var(--ink)}
 .room>p{color:var(--mute);margin:4px 0 18px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:26px}
 .tile{background:transparent;border:0;padding:0;text-align:left;color:inherit;display:flex;flex-direction:column;justify-content:flex-start}
-.tile .frame{padding:12px;box-shadow:0 18px 26px -18px rgba(70,45,15,.55),inset 0 0 0 1px rgba(255,240,200,.6)}
-.tile .frame::after{inset:12px}
+.tile .frame{padding:6px;border-width:6px;box-shadow:0 18px 26px -18px rgba(70,45,15,.55)}
+
 .tile .art{aspect-ratio:4/3}
 .tile .ph b{font-size:21px}
 .tile strong{display:block;margin-top:14px;font:600 17px/1.2 Cinzel,"Cormorant Garamond",serif;letter-spacing:.02em}
@@ -127,7 +127,7 @@ dialog{border:0;padding:0;overflow:auto;width:min(1120px,94vw);max-height:92vh;b
 dialog::backdrop{background:rgba(43,33,24,.72)}
 .view{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:0}
 .vart{padding:clamp(18px,3vw,40px);background:radial-gradient(ellipse at 50% 30%,#fff8ea,#ecdfc8);display:grid;place-items:center}
-.vart .frame{padding:20px;display:inline-block;max-width:100%}
+.vart .frame{padding:12px;display:inline-block;max-width:100%}
 .vart .art{display:block}
 .vart .art img{position:relative;display:block;width:auto;height:auto;max-width:100%;max-height:66vh}
 .vart .art:not(:has(img)){width:min(520px,70vw);aspect-ratio:var(--ar,4/5)}
@@ -309,26 +309,33 @@ async function build(){
   g.fillStyle="#76685a";g.font='400 26px Jost, sans-serif';g.textAlign="center";g.fillText("Fine della galleria · scendi per l'elenco delle opere",w/2,h*.3+260)});
  const ew=new THREE.Mesh(new THREE.PlaneGeometry(2*HALF,CEIL-FLOOR),new THREE.MeshBasicMaterial({map:endTex}));ew.position.set(0,(CEIL+FLOOR)/2,-END);scene.add(ew);
  // quadri
- const gold=new THREE.MeshStandardMaterial({color:0xc9a14f,metalness:.35,roughness:.4,emissive:0x3a2a0c,emissiveIntensity:.3});
+ // cornice a cassetta americana in noce chiaro: listello sottile, profondo, con fuga d'ombra attorno alla tela
+ const woodTex=canvasTex(512,512,(g,w,h)=>{g.fillStyle="#9c7f60";g.fillRect(0,0,w,h);for(let k=0;k<180;k++){const y=(k*37)%h,a=.04+((k*13)%7)/100;g.fillStyle=k%3?`rgba(110,75,40,${a})`:`rgba(235,205,165,${a})`;g.fillRect(0,y,w,1+(k%4))}});
+ woodTex.wrapS=woodTex.wrapT=THREE.RepeatWrapping;woodTex.repeat.set(.02,.02);
+ const wood=new THREE.MeshStandardMaterial({map:woodTex,roughness:.7,metalness:0,color:0xe6ddd2});
+ const gapMat=new THREE.MeshBasicMaterial({color:0x2b2118});
+ const edgeMat=new THREE.MeshBasicMaterial({color:0x3a2e24});
  const fl2=new THREE.PointLight(0xfff3dc,.7,0,0);fl2.position.set(0,250,0);camera.add(fl2);scene.add(camera);
  const frameGeo=(wd,ht,B,D)=>{const sh=new THREE.Shape();sh.moveTo(-wd/2-B,-ht/2-B);sh.lineTo(wd/2+B,-ht/2-B);sh.lineTo(wd/2+B,ht/2+B);sh.lineTo(-wd/2-B,ht/2+B);sh.lineTo(-wd/2-B,-ht/2-B);
   const hole=new THREE.Path();hole.moveTo(-wd/2,-ht/2);hole.lineTo(-wd/2,ht/2);hole.lineTo(wd/2,ht/2);hole.lineTo(wd/2,-ht/2);hole.lineTo(-wd/2,-ht/2);sh.holes.push(hole);
-  return new THREE.ExtrudeGeometry(sh,{depth:D,bevelEnabled:true,bevelThickness:4,bevelSize:4,bevelSegments:3})};
+  return new THREE.ExtrudeGeometry(sh,{depth:D,bevelEnabled:true,bevelThickness:1.5,bevelSize:1.5,bevelSegments:2})};
  const glowTex=canvasTex(256,256,(g,w,h)=>{const gr=g.createRadialGradient(w/2,h*.18,4,w/2,h*.18,w*.5);gr.addColorStop(0,"rgba(255,244,214,.9)");gr.addColorStop(.6,"rgba(255,242,210,.35)");gr.addColorStop(1,"rgba(255,240,205,0)");g.fillStyle=gr;g.fillRect(0,0,w,h)});
  const loader=new THREE.TextureLoader();
  C.forEach((o,i)=>{const w=o.w,s=side(i),[a,b]=w.ar.split("/").map(Number);let ht=FH,wd=FH*a/b;if(wd>660){wd=660;ht=wd*b/a}
-  const B=24,G=new THREE.Group();G.position.set(s*(HALF-2),0,-depth(i));G.rotation.y=-s*Math.PI/2;
+  const B=9,GAP=11,D=46,G=new THREE.Group();G.position.set(s*(HALF-2),0,-depth(i));G.rotation.y=-s*Math.PI/2;
   const cy=86;
-  const glow=new THREE.Mesh(new THREE.PlaneGeometry((wd+2*B)*1.9,ht*1.05),new THREE.MeshBasicMaterial({map:glowTex,transparent:true,depthWrite:false}));glow.position.set(0,cy+ht*.25,1);G.add(glow);
-  const pm=new THREE.MeshBasicMaterial({color:0xe9dcc4});const pic=new THREE.Mesh(new THREE.PlaneGeometry(wd,ht),pm);pic.position.set(0,cy,8);pic.userData.i=o.i;G.add(pic);paintings.push(pic);
+  const glow=new THREE.Mesh(new THREE.PlaneGeometry((wd+2*(B+GAP))*1.9,ht*1.05),new THREE.MeshBasicMaterial({map:glowTex,transparent:true,depthWrite:false}));glow.position.set(0,cy+ht*.25,1);G.add(glow);
+  const back=new THREE.Mesh(new THREE.PlaneGeometry(wd+2*GAP,ht+2*GAP),gapMat);back.position.set(0,cy,3);G.add(back);
+  const pm=new THREE.MeshBasicMaterial({color:0xe9dcc4});
+  const pic=new THREE.Mesh(new THREE.BoxGeometry(wd,ht,26),[edgeMat,edgeMat,edgeMat,edgeMat,pm,edgeMat]);pic.position.set(0,cy,D-12);pic.userData.i=o.i;G.add(pic);paintings.push(pic);
   loader.load(`img/${w.id}.jpg`,t=>{t.encoding=THREE.sRGBEncoding;t.anisotropy=aniso;pm.map=t;pm.color.set(0xffffff);pm.needsUpdate=true});
-  const fr=new THREE.Mesh(frameGeo(wd,ht,B,18),gold);fr.position.set(0,cy,2);fr.userData.i=o.i;G.add(fr);paintings.push(fr);
+  const fr=new THREE.Mesh(frameGeo(wd+2*GAP,ht+2*GAP,B,D-4),wood);fr.position.set(0,cy,0);fr.userData.i=o.i;G.add(fr);paintings.push(fr);
   const PW=330,PH=118;
   const pt=canvasTex(1320,472,(g,W2,H2)=>{g.scale(2,2);const w2=W2/2,h2=H2/2;const gr=g.createLinearGradient(0,0,0,h2);gr.addColorStop(0,"#fffaf0");gr.addColorStop(1,"#f3e9d6");g.fillStyle=gr;g.fillRect(0,0,w2,h2);g.strokeStyle="#d8c6a4";g.lineWidth=2;g.strokeRect(1,1,w2-2,h2-2);
    g.textAlign="center";g.fillStyle="#2b2118";g.font='600 42px Cinzel, Georgia, serif';let y=62;y=wrap(g,w.t,w2/2,y,w2-36,46);
    g.font='400 25px Cinzel, Georgia, serif';g.fillStyle="#3a2c1c";y=wrap(g,w.ref,w2/2,y+4,w2-40,28);
    g.font='400 24px Jost, sans-serif';g.fillStyle="#5a4632";wrap(g,`${w.r} · ${w.y}`,w2/2,y+2,w2-40,28)});
-  pt.anisotropy=aniso;const pl=new THREE.Mesh(new THREE.PlaneGeometry(PW,PH),new THREE.MeshBasicMaterial({map:pt}));pl.position.set(0,cy-ht/2-B-30-PH/2,4);G.add(pl);
+  pt.anisotropy=aniso;const pl=new THREE.Mesh(new THREE.PlaneGeometry(PW,PH),new THREE.MeshBasicMaterial({map:pt}));pl.position.set(0,cy-ht/2-GAP-B-34-PH/2,4);G.add(pl);
   scene.add(G)});
  size();
 }
