@@ -238,7 +238,7 @@ const W=[
 {id:"tank-man",t:"La resistenza dei Meganoidi contro Daitarn III",y:2023,s:"mv",ar:"3/2",r:"Daitarn III, Meganoide",ref:"“Tank Man”, piazza Tienanmen, 1989",f:"SmartX 100×66 cm"}
 ];
 // opere con immagine già caricata in img/
-const HAS=new Set(["pieta","creazione","jeegonda","discobolo","viandante","perseo","nettuno","goldrake-vega","santagata","bacio","gladiatori","ercole","arcangeli","fuga","optimus","ultima-cena","venus","legacy"]);
+const HAS=new Set(["pieta","creazione","jeegonda","discobolo","viandante","perseo","nettuno","goldrake-vega","santagata","bacio","gladiatori","ercole","arcangeli","fuga","optimus","ultima-cena","venus","legacy","fab-four","dream","tank-man"]);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 // immagine in img/<id>.jpg; se manca resta la tela con il titolo
 const art=(w,yr)=>`<span class="ph" aria-hidden="true"><span><b>${esc(w.t)}</b>${yr?`<small>${w.y}</small>`:""}</span></span><img src="img/${w.id}.jpg" alt="${esc(w.t)} — ${esc(w.ref)}" loading="lazy" decoding="async" onerror="this.remove()">`;
