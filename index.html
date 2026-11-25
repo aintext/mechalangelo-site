@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mechalangelo Project</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* VOICE: un grande museo classico, quieto e raffinato; l'ironia mecha sta nelle opere, non nell'impaginazione.
+   IDEA: la galleria di una gipsoteca: pareti di gesso, lucernario, pavimento in marmo, quadri in cornici dorate.
+   PICTURE: il corridoio 3D in luce calda, percorso scorrendo; la camera si volta verso ogni quadro.
+   COLOUR and TYPE: avorio, gesso, travertino, oro brunito, inchiostro bruno; Cormorant Garamond + Jost.
+   LAYOUT: corridoio a tutto schermo, poi l'indice delle sale, il progetto, contatti. */
+:root{color-scheme:light dark;
+--bg:light-dark(#f7f0e4,#1f1a15);--ink:light-dark(#2b2118,#efe6d6);--mute:light-dark(#76685a,#b9ab98);
+--line:light-dark(#e2d6c4,#3a3128);--card:light-dark(#fffaf2,#29221b);--gold:#b08a3e;--gold2:#e7cd8a}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:72px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Jost,system-ui,sans-serif;overflow-x:clip}
+a{color:inherit}
+h1,h2,h3{font-family:"Cormorant Garamond",Georgia,serif;font-weight:600;line-height:1.05;text-wrap:balance;margin:0}
+h1{font-size:clamp(36px,5vw,52px)}
+h2{font-size:clamp(30px,3.8vw,44px);margin-bottom:16px}
+p{max-width:66ch}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.band{padding:clamp(36px,5vw,80px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top{display:flex;flex-wrap:wrap;gap:6px 28px;align-items:center;justify-content:space-between;padding:12px max(5vw,16px)}
+.logo{text-decoration:none;font:600 22px/1 "Cormorant Garamond",serif;letter-spacing:.02em}
+.logo small{display:block;font:400 12px Jost,sans-serif;color:var(--mute);margin-top:3px}
+nav{display:flex;flex-wrap:wrap;gap:0 22px}
+nav a{text-decoration:none;color:var(--mute);padding:10px 0}
+nav a:hover{color:var(--ink)}
+@media(max-width:600px){.top{padding-block:8px}nav{gap:0 14px}nav a{font-size:14px}}
+
+/* ---------- corridoio ---------- */
+.hall{position:relative;background:#efe5d4}
+.stage{position:sticky;top:var(--hh,60px);height:calc(100svh - var(--hh,60px));min-height:440px;overflow:hidden;
+ background:radial-gradient(ellipse at 50% 42%,#fff8ea 0,#f1e6d3 38%,#e4d5bd 75%);perspective:1000px;perspective-origin:50% 44%;cursor:grab;touch-action:pan-y;user-select:none}
+.stage.drag{cursor:grabbing}
+.world{position:absolute;left:50%;top:44%;width:0;height:0;transform-style:preserve-3d}
+.world>*{position:absolute;left:0;top:0;transform-origin:0 0}
+/* parete di gesso con zoccolo e cornice di gesso */
+.wl{background:
+ linear-gradient(#e9dfcc 0 3%,#f6efe2 3.6%,#f3ead9 6%,transparent 6%),
+ linear-gradient(transparent 0 79%,#e6d9c3 79% 80%,#fbf5ea 80% 81%,transparent 81%),
+ linear-gradient(transparent 0 88%,#d9c8ab 88% 88.6%,#cdb995 88.6%),
+ linear-gradient(#f4ecde,#efe5d3 55%,#e8dcc6)}
+.fl{background:
+ repeating-linear-gradient(90deg,rgba(255,255,255,.0) 0 248px,rgba(150,120,85,.22) 248px 250px),
+ repeating-linear-gradient(0deg,rgba(255,255,255,.0) 0 248px,rgba(150,120,85,.22) 248px 250px),
+ linear-gradient(90deg,#e2d3b9,#ecdfc8 30%,#efe4cf 50%,#ecdfc8 70%,#e2d3b9)}
+.cl{background:
+ linear-gradient(90deg,#efe5d3 0 18%,transparent 18% 82%,#efe5d3 82%),
+ repeating-linear-gradient(0deg,#e8dcc8 0 40px,#fffbf2 40px 380px),
+ #fffbf2}
+.endw{background:radial-gradient(ellipse at 50% 40%,#fbf5ea,#eee3cf 70%);display:grid;place-items:center;text-align:center;color:#2b2118}
+.endw b{display:block;font:600 76px/1 "Cormorant Garamond",serif}
+.endw span{font:400 26px Jost,sans-serif;color:#76685a}
+/* quadro appeso */
+.wf{transform-origin:50% 50%!important;display:flex;flex-direction:column;align-items:center;gap:30px}
+.wf::before{content:"";position:absolute;left:-40%;right:-40%;top:-30%;height:95%;background:radial-gradient(ellipse at 50% 0,rgba(255,244,214,.95),rgba(255,240,205,0) 68%);pointer-events:none}
+.frame{position:relative;display:block;border:0;padding:24px;cursor:pointer;
+ background:linear-gradient(135deg,#7d5a1f,#e9cf86 18%,#a77d2c 34%,#f6e3a6 50%,#9a6f22 66%,#dcbc6c 82%,#6f4f1a);
+ box-shadow:0 34px 46px -22px rgba(70,45,15,.55),0 10px 18px -10px rgba(70,45,15,.35),inset 0 0 0 2px #f4dfa0,inset 0 0 0 4px #8a6524,inset 0 0 0 9px #c9a453,inset 0 0 0 11px #7d5a1f}
+.frame::after{content:"";position:absolute;inset:18px;border:3px solid #5d4214;box-shadow:inset 0 0 0 2px #e9cf86;pointer-events:none}
+.art{display:block;position:relative;overflow:hidden;background:#e9dcc4}
+.art img{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover}
+.ph{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:18px;color:#5a4632;
+ background:radial-gradient(ellipse at 40% 35%,#f2e6cf,#dccaa8 70%,#cdb790)}
+.ph b{display:block;font:italic 500 30px/1.1 "Cormorant Garamond",serif}
+.ph small{display:block;margin-top:8px;font-size:16px;letter-spacing:.06em}
+.plate{width:330px;padding:12px 18px;text-align:center;color:#3a2c1c;font-size:15px;line-height:1.4;
+ background:linear-gradient(180deg,#fffaf0,#f3e9d6);border:1px solid #d8c6a4;box-shadow:0 6px 12px -8px rgba(70,45,15,.5)}
+.plate h3{font-size:24px;margin-bottom:4px;color:#2b2118}
+.plate em{font-family:"Cormorant Garamond",serif;font-size:18px}
+/* interfaccia sopra la scena */
+.hud{position:absolute;inset:0;pointer-events:none;color:#2b2118}
+.intro{position:absolute;left:max(5vw,16px);top:clamp(20px,5vh,48px);max-width:520px;transition:opacity .5s}
+.intro p{margin:10px 0 0;color:#6e5f4f}
+.hint{position:absolute;right:max(5vw,16px);top:clamp(26px,5vh,54px);text-align:right;font-size:13px;color:#7d6d5c;transition:opacity .5s}
+.ctrl{position:absolute;left:0;right:0;bottom:20px;display:flex;gap:16px;align-items:center;justify-content:center;pointer-events:auto}
+.ctrl span{min-width:76px;text-align:center;white-space:nowrap;font:500 20px "Cormorant Garamond",serif;color:#4a3a28}
+.arr{width:48px;height:48px;border-radius:50%;border:1px solid var(--gold);background:rgba(255,250,240,.75);color:#5d4214;font-size:18px}
+.arr:hover{background:var(--gold);color:#fff}
+.skip{position:absolute;left:50%;transform:translateX(-50%);bottom:78px;pointer-events:auto;font-size:13px;color:#7d6d5c;text-decoration:none;padding:10px;transition:opacity .5s}
+@media(max-width:600px){.hint{display:none}.intro h1{font-size:32px}}
+
+/* ---------- sale ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 26px}
+.chips button{border:1px solid var(--line);background:transparent;color:var(--ink);padding:10px 18px;border-radius:999px;min-height:44px}
+.chips button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.room{margin-top:38px}
+.room h3{font-size:30px}
+.room>p{color:var(--mute);margin:4px 0 18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:26px}
+.tile{background:transparent;border:0;padding:0;text-align:left;color:inherit;display:flex;flex-direction:column;justify-content:flex-start}
+.tile .frame{padding:12px;box-shadow:0 18px 26px -18px rgba(70,45,15,.6),inset 0 0 0 2px #f4dfa0,inset 0 0 0 4px #8a6524,inset 0 0 0 6px #c9a453}
+.tile .frame::after{inset:9px;border-width:2px}
+.tile .art{aspect-ratio:4/3}
+.tile .ph b{font-size:21px}
+.tile strong{display:block;margin-top:14px;font:600 21px/1.15 "Cormorant Garamond",serif}
+.tile span.r{display:block;font-size:14px;color:var(--mute);margin-top:3px}
+
+/* ---------- progetto ---------- */
+.proj{background:light-dark(#efe5d4,#29221b)}
+.cols{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:clamp(24px,5vw,80px)}
+.facts{list-style:none;margin:0;padding:0;border-top:1px solid var(--gold)}
+.facts li{display:flex;justify-content:space-between;gap:16px;padding:13px 0;border-bottom:1px solid var(--line)}
+.facts span{color:var(--mute)}.facts b{font-weight:500;text-align:right}
+.cta{display:inline-flex;align-items:center;min-height:48px;padding:0 22px;margin:10px 12px 0 0;text-decoration:none;border:1px solid var(--gold);color:var(--ink)}
+.cta:hover{background:var(--gold);color:#fff}
+footer{padding:24px max(5vw,16px);font-size:13px;color:var(--mute);border-top:1px solid var(--line)}
+@media(max-width:780px){.cols{grid-template-columns:minmax(0,1fr)}}
+
+/* ---------- visore ---------- */
+dialog{border:0;padding:0;width:min(1120px,94vw);max-height:92vh;background:#f7f0e4;color:#2b2118}
+dialog::backdrop{background:rgba(43,33,24,.72)}
+.view{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:0}
+.vart{padding:clamp(18px,3vw,40px);background:radial-gradient(ellipse at 50% 30%,#fff8ea,#ecdfc8);display:grid;place-items:center}
+.vart .frame{padding:20px;width:100%}
+.vart .art{width:100%;aspect-ratio:var(--ar,4/5);max-height:66vh}
+.vart .art img{object-fit:contain;background:#e9dcc4}
+.info{padding:30px 26px}
+.info h3{font-size:34px;margin-bottom:14px}
+.info dl{margin:0;display:grid;gap:12px}
+.info dt{font-size:13px;color:#7d6d5c}.info dd{margin:0}
+.dbar{display:flex;gap:10px;margin-top:24px}
+.x{position:absolute;top:10px;right:10px;z-index:2}
+@media(max-width:780px){.view{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){.intro,.hint,.skip{transition:none}}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <a class="logo" href="#corridoio">Mechalangelo <small>Project · Giuseppe Suma</small></a>
+  <nav aria-label="Sezioni"><a href="#corridoio">La galleria</a><a href="#sale">Le opere</a><a href="#progetto">Il progetto</a></nav>
+</div></header>
+
+<main>
+<section class="hall" id="corridoio" aria-label="Galleria delle opere">
+  <div class="stage" id="stage">
+    <div class="world" id="world"></div>
+    <div class="hud">
+      <div class="intro" id="intro">
+        <h1>I robot sono entrati al museo.</h1>
+        <p>Dipinti digitali in cui i mecha giapponesi degli anni '70 e '80 rifanno le pose dei capolavori.</p>
+      </div>
+      <div class="hint" id="hint">Scorri o trascina per camminare.<br>Clicca un quadro per avvicinarti.</div>
+      <a class="skip" id="skip" href="#sale">Vai all'elenco delle opere ↓</a>
+      <div class="ctrl">
+        <button class="arr" id="prev" aria-label="Opera precedente">←</button>
+        <span id="count" aria-live="polite">Ingresso</span>
+        <button class="arr" id="next" aria-label="Opera successiva">→</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="sale">
+  <div class="wrap">
+    <h2>Le opere</h2>
+    <div class="chips" role="group" aria-label="Filtra per serie">
+      <button aria-pressed="true" data-f="all">Tutte</button>
+      <button aria-pressed="false" data-f="s1">I capolavori</button>
+      <button aria-pressed="false" data-f="mv">Multiverse</button>
+    </div>
+    <div id="rooms"></div>
+  </div>
+</section>
+
+<section class="band proj" id="progetto">
+  <div class="wrap cols">
+    <div>
+      <h2>Mechalangelo Project</h2>
+      <p>Il progetto di Giuseppe Suma (AinteXt) porta i robot giapponesi degli anni '70 e '80 dentro la grande arte: da Michelangelo a Caravaggio, da Leonardo a Canova.</p>
+      <p>Ogni opera nasce da un model kit vero, montato, dipinto e messo in posa a mano, poi fotografato e completato in pittura digitale. Le stampe escono in tiratura limitata, numerate e firmate, su SmartX, D-bond e supporto materico.</p>
+      <a class="cta" href="https://www.instagram.com/mechalangelo.art/">Instagram @mechalangelo.art</a>
+      <a class="cta" href="https://www.facebook.com/Mechalangelo">Facebook</a>
+    </div>
+    <ul class="facts">
+      <li><span>Opere in catalogo</span><b id="nWorks">—</b></li>
+      <li><span>Anni</span><b>2022 – 2025</b></li>
+      <li><span>Serie</span><b>Capolavori · Multiverse</b></li>
+      <li><span>Mostra personale</span><b>CEC Cecina, 2025</b></li>
+      <li><span>Tirature</span><b>Numerate e firmate, con certificato</b></li>
+    </ul>
+  </div>
+</section>
+</main>
+<footer>© Giuseppe Suma — AinteXt · Mechalangelo Project. Le opere di riferimento appartengono ai rispettivi autori; i robot ai rispettivi titolari.</footer>
+
+<dialog id="dlg" aria-label="Opera">
+  <button class="arr x" id="close" aria-label="Chiudi">×</button>
+  <div class="view">
+    <div class="vart"><span class="frame" id="dArt"></span></div>
+    <div class="info">
+      <h3 id="dT"></h3>
+      <dl id="dL"></dl>
+      <div class="dbar"><button class="arr" id="dPrev" aria-label="Precedente">←</button><button class="arr" id="dNext" aria-label="Successiva">→</button></div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+{
+const W=[
+{id:"pieta",t:"La Pietà",y:2022,s:"s1",ar:"3/2",r:"Getter Dragon, Gundam Blitz",ref:"La Pietà, Michelangelo, 1497–99",f:"SmartX 90×60 cm"},
+{id:"creazione",t:"La Creazione di Adamo",y:2022,s:"s1",ar:"3/2",r:"Gundam Age, Grande Mazinga",ref:"La Creazione di Adamo, Michelangelo, 1511",f:"SmartX 90×60 · D-bond 54×36 cm"},
+{id:"jeegonda",t:"La Jeegonda",y:2022,s:"s1",ar:"4/5",r:"Jeeg Robot d'Acciaio",ref:"La Gioconda, Leonardo da Vinci, 1503",f:"SmartX 63×80 · D-bond 40×50 · Materica 50×62 cm"},
+{id:"discobolo",t:"Il Discobolo",y:2022,s:"s1",ar:"3/2",r:"Getter Robot",ref:"Il Discobolo, Mirone, 455 a.C.",f:"SmartX 90×60 · D-bond 54×36 cm"},
+{id:"viandante",t:"Viandante sul mare di nebbia",y:2022,s:"s1",ar:"4/5",r:"Gundam Red Astray",ref:"Caspar David Friedrich, 1818",f:"SmartX 64×80 cm"},
+{id:"perseo",t:"Mazinga con la testa del Generale Nero",y:2022,s:"s1",ar:"3/2",r:"Grande Mazinga, Generale Nero",ref:"Perseo con la testa di Medusa, Cellini, 1554",f:"SmartX 90×60 · D-bond 54×36 cm"},
+{id:"nettuno",t:"Il Nettuno",y:2022,s:"s1",ar:"3/2",r:"Zambot III",ref:"Fontana del Nettuno, Giambologna, 1556",f:"SmartX 90×60 · D-bond 54×36 cm"},
+{id:"goldrake-vega",t:"Goldrake con la testa di Re Vega",y:2022,s:"s1",ar:"1/1",r:"Goldrake, Re Vega",ref:"Davide con la testa di Golia, Caravaggio, 1609–10",f:"SmartX 80×80 · D-bond 40×40 cm, cornice stampata in 3D"},
+{id:"santagata",t:"Aphrodite-A soccorsa da Jeeg e Goldrake",y:2022,s:"s1",ar:"3/2",r:"Aphrodite-A, Jeeg, Goldrake",ref:"Sant'Agata visitata in carcere, Lanfranco, 1609–14",f:"SmartX 90×60 · D-bond 54×36 cm"},
+{id:"bacio",t:"Il Bacio",y:2023,s:"s1",ar:"4/5",r:"Daitarn III, Getter Dragon, Jeeg",ref:"Il Bacio, Francesco Hayez, 1859",f:"SmartX 64×80 · D-bond 40×50 cm"},
+{id:"gladiatori",t:"I due Gladiatori",y:2023,s:"s1",ar:"1/1",r:"Daitarn III, Zambot III",ref:"Combate de gladiadores, Aparicio, 1805–38",f:"SmartX 80×80 · D-bond 40×40 cm"},
+{id:"ercole",t:"Grande Mazinga vs Mazinga Z",y:2023,s:"s1",ar:"1/1",r:"Grande Mazinga, Mazinga Z",ref:"Ercole e Anteo, Pollaiolo, 1475",f:"SmartX 80×80 · D-bond 40×40 cm"},
+{id:"arcangeli",t:"I tre Arcangeli",y:2023,s:"s1",ar:"4/5",r:"Getter Robot, Mazinga Zeta, Grande Mazinga, Goldrake",ref:"Pala dei tre Arcangeli, Marco d'Oggiono, 1516",f:"SmartX 64×80 · D-bond 80×100 e 40×50 cm"},
+{id:"fuga",t:"Fuga d'Amore",y:2024,s:"s1",ar:"3/2",r:"Minerva-X, Mazinga Zeta",ref:"Amore e Psiche, Antonio Canova, 1793",f:"SmartX 90×60 · D-bond 54×36 cm"},
+{id:"optimus",t:"Optimus Mundi",y:2024,s:"s1",ar:"4/5",r:"Optimus Prime",ref:"Salvator Mundi, Leonardo da Vinci, 1515",f:"SmartX 64×80 cm"},
+{id:"ultima-cena",t:"L'Ultima Cena",y:2025,s:"s1",ar:"16/9",r:"Zambot III, Trider G7, Daitarn III, Gundam, Getter, Mazinga Z, Goldrake, Grande Mazinga, Jeeg, Voltron, Optimus Prime, Valkyrie, Daltanious",ref:"Il Cenacolo, Leonardo da Vinci, 1498",f:"SmartX 100×56 · D-bond 54×30 · Materica 70×40 · Materica 150×80 cm (5 esemplari numerati e firmati)"},
+{id:"venus",t:"La Nascita di Venus-A",y:2025,s:"s1",ar:"16/9",r:"Mazinga Z, Minerva-X, Venus-A, Aphrodite-A",ref:"La Nascita di Venere, Botticelli, 1485",f:"SmartX 100×56 e 70×40 · D-bond 54×30 cm"},
+{id:"fab-four",t:"The Fab Four",y:2023,s:"mv",ar:"16/9",r:"Goldrake, Grande Mazinga, Mazinga Z, Jeeg",ref:"Abbey Road, The Beatles, 1969",f:"SmartX 100×56 cm"},
+{id:"dream",t:"“I Have a Dream”",y:2023,s:"mv",ar:"3/2",r:"Daitarn III, Zambot III, Gundam, Grande Mazinga, Jeeg, Daltanious",ref:"Discorso di Martin Luther King Jr., 1963",f:"SmartX 100×66 cm"},
+{id:"tank-man",t:"La resistenza dei Meganoidi contro Daitarn III",y:2023,s:"mv",ar:"3/2",r:"Daitarn III, Meganoide",ref:"“Tank Man”, piazza Tienanmen, 1989",f:"SmartX 100×66 cm"}
+];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+// immagine in img/<id>.jpg; se manca resta la tela con il titolo
+const art=(w,yr)=>`<span class="ph" aria-hidden="true"><span><b>${esc(w.t)}</b>${yr?`<small>${w.y}</small>`:""}</span></span><img src="img/${w.id}.jpg" alt="${esc(w.t)} — ${esc(w.ref)}" loading="lazy" onerror="this.remove()">`;
+document.getElementById("nWorks").textContent=W.length;
+
+// --- indice delle opere ---
+const rooms=document.getElementById("rooms");
+const R=[{k:"s1",t:"I capolavori",d:"Pittura e scultura classica, dal Discobolo a Botticelli."},{k:"mv",t:"Multiverse",d:"Citazioni iconiche fuori dalla pittura: copertine, discorsi, fotografie."}];
+let filt="all";
+const drawRooms=()=>{rooms.innerHTML=R.filter(r=>filt==="all"||filt===r.k).map(r=>`<div class="room"><h3>${esc(r.t)}</h3><p>${esc(r.d)}</p><div class="grid">${W.map((w,i)=>w.s===r.k?`<button class="tile" data-i="${i}"><span class="frame"><span class="art">${art(w,0)}</span></span><strong>${esc(w.t)}</strong><span class="r">${esc(w.ref)}</span></button>`:"").join("")}</div></div>`).join("")};
+drawRooms();
+document.querySelectorAll(".chips button").forEach(b=>b.addEventListener("click",()=>{filt=b.dataset.f;document.querySelectorAll(".chips button").forEach(x=>x.setAttribute("aria-pressed",x===b));drawRooms()}));
+
+// --- corridoio 3D: lo scroll fa camminare, la camera si volta verso ogni quadro ---
+const hall=document.getElementById("corridoio"),stage=document.getElementById("stage"),world=document.getElementById("world");
+const N=W.length,HALF=560,TOP=-560,BOT=520,GAP=820,FH=400,FOC=980;
+const depth=i=>1400+i*GAP,side=i=>i%2?1:-1,END=depth(N-1)+1600;
+const cams=[{c:0,y:0}];
+W.forEach((w,i)=>cams.push({c:depth(i)-FOC,y:side(i)*Math.atan2(HALF,FOC)*180/Math.PI*.9}));
+cams.push({c:END-1300,y:0});
+hall.style.height=`calc(100svh + ${(N+1)*50}vh)`;
+let h="";const SEG=1600;
+for(let z=0;z<END;z+=SEG){const L=Math.min(SEG,END-z)+2;
+ h+=`<div class="wl" data-z="${z+L/2}" style="width:${L}px;height:${BOT-TOP}px;transform:translate3d(${-HALF}px,${TOP}px,${-z}px) rotateY(90deg)"></div>`;
+ h+=`<div class="wl" data-z="${z+L/2}" style="width:${L}px;height:${BOT-TOP}px;transform:translate3d(${HALF}px,${TOP}px,${-z}px) rotateY(90deg)"></div>`;
+ h+=`<div class="fl" data-z="${z+L/2}" style="width:${HALF*2}px;height:${L}px;transform:translate3d(${-HALF}px,${BOT}px,${-z}px) rotateX(-90deg)"></div>`;
+ h+=`<div class="cl" data-z="${z+L/2}" style="width:${HALF*2}px;height:${L}px;transform:translate3d(${-HALF}px,${TOP}px,${-z}px) rotateX(-90deg)"></div>`}
+h+=`<div class="endw" data-z="${END}" style="width:${HALF*2}px;height:${BOT-TOP}px;transform:translate3d(${-HALF}px,${TOP}px,${-END}px)"><div><b>Mechalangelo</b><span>Fine della galleria · scendi per l'elenco delle opere</span></div></div>`;
+h+=W.map((w,i)=>{const[a,b]=w.ar.split("/").map(Number);let ht=FH,wd=FH*a/b;if(wd>660){wd=660;ht=wd*b/a}const fw=wd+48;
+ return `<div class="wf" data-z="${depth(i)}" style="width:${fw}px;transform:translate3d(${side(i)*(HALF-2)-fw/2}px,${-ht/2-110}px,${-depth(i)}px) rotateY(${-side(i)*90}deg)"><button class="frame" data-i="${i}" aria-label="Apri ${esc(w.t)}"><span class="art" style="width:${wd}px;height:${ht}px">${art(w,1)}</span></button><div class="plate"><h3>${esc(w.t)}</h3><em>${esc(w.ref)}</em><br>${esc(w.r)} · ${w.y}</div></div>`}).join("");
+world.innerHTML=h;
+const els=[...world.children].map(e=>({e,z:+e.dataset.z}));
+const intro=document.getElementById("intro"),hint=document.getElementById("hint"),skip=document.getElementById("skip"),cnt=document.getElementById("count");
+const ss=t=>t*t*(3-2*t);
+let mx=0,my=0,lx=0,ly=0,P=1000,last="";
+const prog=()=>{const r=hall.getBoundingClientRect(),run=hall.offsetHeight-stage.offsetHeight;return Math.max(0,Math.min(1,-r.top/Math.max(1,run)))*(N+1)};
+const tick=()=>{
+ const p=prog(),k=Math.min(N,Math.floor(p)),f=ss(p-k),A=cams[k],B=cams[Math.min(N+1,k+1)];
+ const c=A.c+(B.c-A.c)*f,yaw=A.y+(B.y-A.y)*f;
+ lx+=(mx-lx)*.07;ly+=(my-ly)*.07;
+ const t=`translateZ(${P}px) rotateX(${(-ly*2.5).toFixed(2)}deg) rotateY(${(yaw+lx*5).toFixed(2)}deg) translateZ(${c.toFixed(1)}px)`;
+ if(t!==last){world.style.transform=t;last=t;
+  for(const o of els){const d=o.z-c;o.e.style.opacity=d<-800?0:Math.max(0,Math.min(1,1-(d-2600)/3000)).toFixed(2)}}
+ const o=p<.35?1:0;intro.style.opacity=hint.style.opacity=skip.style.opacity=o;
+ const n=Math.round(p);cnt.textContent=n<1?"Ingresso":n>N?"Fine":`${n} / ${N}`;
+ requestAnimationFrame(tick)};
+const size=()=>{document.documentElement.style.setProperty("--hh",document.querySelector("header").offsetHeight+"px");P=Math.round(1000*Math.min(1,Math.max(.5,stage.clientWidth/1150)));stage.style.perspective=P+"px"};
+const ro=new ResizeObserver(size);ro.observe(stage);size();requestAnimationFrame(tick);
+const goStep=n=>{n=Math.max(0,Math.min(N+1,n));const run=hall.offsetHeight-stage.offsetHeight;scrollTo({top:hall.offsetTop+run*n/(N+1),behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"})};
+const cur=()=>Math.round(prog());
+document.getElementById("prev").addEventListener("click",()=>goStep(cur()-1));
+document.getElementById("next").addEventListener("click",()=>goStep(cur()+1));
+const dlg=document.getElementById("dlg");
+addEventListener("keydown",e=>{const r=hall.getBoundingClientRect();if(dlg.open||r.bottom<200||r.top>200)return;if(e.key==="ArrowRight"){e.preventDefault();goStep(cur()+1)}if(e.key==="ArrowLeft"){e.preventDefault();goStep(cur()-1)}});
+stage.addEventListener("pointermove",e=>{const r=stage.getBoundingClientRect();mx=(e.clientX-r.left)/r.width*2-1;my=(e.clientY-r.top)/r.height*2-1});
+stage.addEventListener("pointerleave",()=>{mx=my=0});
+let dn=null,moved=false;
+stage.addEventListener("pointerdown",e=>{if(e.pointerType!=="mouse"||e.target.closest("a,.ctrl"))return;dn={x:e.clientX,y:e.clientY};moved=false;stage.classList.add("drag")});
+addEventListener("pointermove",e=>{if(!dn)return;const dx=e.clientX-dn.x,dy=e.clientY-dn.y;if(Math.abs(dx)+Math.abs(dy)>4)moved=true;scrollBy(0,(-dx-dy)*2.2);dn={x:e.clientX,y:e.clientY}});
+addEventListener("pointerup",()=>{if(!dn)return;dn=null;stage.classList.remove("drag")});
+
+// --- visore: avvicinarsi a un quadro ---
+let at=0;
+const show=i=>{at=(i+N)%N;const w=W[at],a=document.getElementById("dArt");
+ a.innerHTML=`<span class="art" style="--ar:${w.ar}">${art(w,1)}</span>`;
+ document.getElementById("dT").textContent=w.t;
+ document.getElementById("dL").innerHTML=[["Opera di riferimento",w.ref],["Robot",w.r],["Anno",w.y],["Serie",w.s==="s1"?"I capolavori":"Multiverse"],["Formati",w.f]].map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-i]");if(!b)return;if(moved&&b.closest(".stage")){moved=false;return}show(+b.dataset.i);try{dlg.showModal()}catch(_){dlg.setAttribute("open","")}});
+document.getElementById("close").addEventListener("click",()=>dlg.close());
+document.getElementById("dPrev").addEventListener("click",()=>show(at-1));
+document.getElementById("dNext").addEventListener("click",()=>show(at+1));
+dlg.addEventListener("keydown",e=>{if(e.key==="ArrowRight")show(at+1);if(e.key==="ArrowLeft")show(at-1)});
+dlg.addEventListener("click",e=>{if(e.target===dlg)dlg.close()});
+}
+</script>
+</body>
+</html>
