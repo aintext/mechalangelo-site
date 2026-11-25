@@ -326,8 +326,8 @@ async function build(){
   bar(wd+2*B,B,0,cy+ht/2+B/2);bar(wd+2*B,B,0,cy-ht/2-B/2);bar(B,ht,-(wd/2+B/2),cy);bar(B,ht,wd/2+B/2,cy);
   const PW=330,PH=118;
   const pt=canvasTex(1320,472,(g,W2,H2)=>{g.scale(2,2);const w2=W2/2,h2=H2/2;const gr=g.createLinearGradient(0,0,0,h2);gr.addColorStop(0,"#fffaf0");gr.addColorStop(1,"#f3e9d6");g.fillStyle=gr;g.fillRect(0,0,w2,h2);g.strokeStyle="#d8c6a4";g.lineWidth=2;g.strokeRect(1,1,w2-2,h2-2);
-   g.textAlign="center";g.fillStyle="#2b2118";g.font='600 34px Cinzel, Georgia, serif';let y=56;y=wrap(g,w.t,w2/2,y,w2-40,40);
-   g.font='400 22px Cinzel, Georgia, serif';g.fillStyle="#3a2c1c";y=wrap(g,w.ref,w2/2,y+4,w2-40,28);
+   g.textAlign="center";g.fillStyle="#2b2118";g.font='600 42px Cinzel, Georgia, serif';let y=62;y=wrap(g,w.t,w2/2,y,w2-36,46);
+   g.font='400 25px Cinzel, Georgia, serif';g.fillStyle="#3a2c1c";y=wrap(g,w.ref,w2/2,y+4,w2-40,28);
    g.font='400 24px Jost, sans-serif';g.fillStyle="#5a4632";wrap(g,`${w.r} · ${w.y}`,w2/2,y+2,w2-40,28)});
   pt.anisotropy=aniso;const pl=new THREE.Mesh(new THREE.PlaneGeometry(PW,PH),new THREE.MeshBasicMaterial({map:pt}));pl.position.set(0,cy-ht/2-B-30-PH/2,4);G.add(pl);
   scene.add(G)});
