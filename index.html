@@ -172,7 +172,7 @@ dialog::backdrop{background:rgba(43,33,24,.72)}
     <h2>Le opere</h2>
     <div class="chips" role="group" aria-label="Filtra per serie">
       <button aria-pressed="true" data-f="all">Tutte</button>
-      <button aria-pressed="false" data-f="s1">I capolavori</button>
+      <button aria-pressed="false" data-f="s1">Masterpieces</button>
       <button aria-pressed="false" data-f="mv">Multiverse</button>
     </div>
     <div id="rooms"></div>
@@ -191,7 +191,7 @@ dialog::backdrop{background:rgba(43,33,24,.72)}
     <ul class="facts">
       <li><span>Opere in catalogo</span><b id="nWorks">—</b></li>
       <li><span>Anni</span><b>2022 – 2026</b></li>
-      <li><span>Serie</span><b>Capolavori · Multiverse</b></li>
+      <li><span>Serie</span><b>Masterpieces · Multiverse</b></li>
       <li><span>Mostra personale</span><b>CEC Cecina, 2025</b></li>
       <li><span>Tirature</span><b>Numerate e firmate, con certificato</b></li>
     </ul>
@@ -246,7 +246,7 @@ document.getElementById("nWorks").textContent=W.length;
 
 // --- indice delle opere ---
 const rooms=document.getElementById("rooms");
-const R=[{k:"s1",t:"I capolavori",d:"Pittura e scultura classica, dal Discobolo a Botticelli."},{k:"mv",t:"Multiverse",d:"Citazioni iconiche fuori dalla pittura: copertine, discorsi, fotografie."}];
+const R=[{k:"s1",t:"Masterpieces",d:"Pittura e scultura classica, dal Discobolo a Botticelli."},{k:"mv",t:"Multiverse",d:"Citazioni iconiche fuori dalla pittura: copertine, discorsi, fotografie."}];
 let filt="all";
 const drawRooms=()=>{rooms.innerHTML=R.filter(r=>filt==="all"||filt===r.k).map(r=>`<div class="room"><h3>${esc(r.t)}</h3><p>${esc(r.d)}</p><div class="grid">${W.map((w,i)=>w.s===r.k?`<button class="tile" data-i="${i}"><span class="frame"><span class="art">${art(w,0)}</span></span><strong>${esc(w.t)}</strong><span class="r">${esc(w.ref)}</span></button>`:"").join("")}</div></div>`).join("")};
 drawRooms();
@@ -305,7 +305,7 @@ let at=0;const NW=W.length;
 const show=i=>{at=(i+NW)%NW;const w=W[at],a=document.getElementById("dArt");
  a.innerHTML=`<span class="art" style="--ar:${w.ar}">${art(w,1)}</span>`;
  document.getElementById("dT").textContent=w.t;
- document.getElementById("dL").innerHTML=[["Opera di riferimento",w.ref],["Robot",w.r],["Anno",w.y],["Serie",w.s==="s1"?"I capolavori":"Multiverse"],["Formati",w.f]].filter(([,v])=>v).map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")};
+ document.getElementById("dL").innerHTML=[["Opera di riferimento",w.ref],["Robot",w.r],["Anno",w.y],["Serie",w.s==="s1"?"Masterpieces":"Multiverse"],["Formati",w.f]].filter(([,v])=>v).map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-i]");if(!b)return;if(moved&&b.closest(".stage")){moved=false;return}show(+b.dataset.i);try{dlg.showModal()}catch(_){dlg.setAttribute("open","")}});
 document.getElementById("close").addEventListener("click",()=>dlg.close());
 document.getElementById("dPrev").addEventListener("click",()=>show(at-1));
