@@ -43,9 +43,17 @@ nav a:hover{color:var(--ink)}
 
 /* ---------- corridoio ---------- */
 .hall{position:relative;background:#efe5d4}
-.stage{position:sticky;top:var(--hh,60px);height:calc(100svh - var(--hh,60px));min-height:440px;overflow:hidden;
- background:#f2e9da;perspective:1000px;perspective-origin:50% 44%;cursor:grab;touch-action:pan-y;user-select:none}
-.stage.drag{cursor:grabbing}
+.stage{position:relative;height:min(76svh,740px);min-height:420px;overflow:hidden;background:#ece5d8;cursor:pointer;touch-action:pan-y;user-select:none}
+.stage.active{position:fixed;inset:0;height:auto;min-height:0;z-index:60;cursor:grab;touch-action:none}
+body.gallery-open{overflow:hidden}
+.stage:not(.active) .ctrl,.stage:not(.active) .hint,.stage:not(.active) .exit,.stage:not(.active) .skip{display:none}
+.stage.active .enter{opacity:0;pointer-events:none}
+.enter{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:14px;padding:24px;text-align:center;pointer-events:auto;background:radial-gradient(ellipse at 50% 55%,rgba(250,244,233,.55),rgba(250,244,233,.15) 60%,transparent);transition:opacity .4s}
+.enter-btn{font:500 clamp(22px,2.6vw,30px) "Cormorant Garamond",serif;letter-spacing:.04em;padding:16px 34px;min-height:56px;border:1px solid #a8896a;background:rgba(255,250,240,.92);color:#2b2118;box-shadow:0 18px 40px -20px rgba(70,45,15,.55);transition:background .2s,color .2s}
+.enter-btn:hover,.stage:not(.active):hover .enter-btn{background:#2b2118;color:#fbf5ea;border-color:#2b2118}
+.enter small{font-size:13px;color:#4a3a28;background:rgba(255,250,240,.75);padding:4px 10px}
+.exit{position:absolute;top:16px;right:16px;pointer-events:auto;font-size:22px}
+.stage.active.drag{cursor:grabbing}
 #gl{position:absolute;inset:0;width:100%;height:100%;display:block}
 .stage.nogl::after{content:"La galleria 3D non è disponibile su questo browser: scendi per l'elenco delle opere.";position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:#5a4632}
 .world{position:absolute;left:50%;top:44%;width:0;height:0;transform-style:preserve-3d}
@@ -87,7 +95,7 @@ nav a:hover{color:var(--ink)}
 .plate em{font-family:"Cormorant Garamond",serif;font-size:18px}
 /* interfaccia sopra la scena */
 .hud{position:absolute;inset:0;pointer-events:none;color:#2b2118}
-.hint{position:absolute;right:max(5vw,16px);top:clamp(26px,5vh,54px);text-align:right;font-size:13px;color:#7d6d5c;transition:opacity .5s}
+.hint{position:absolute;right:max(5vw,16px);top:clamp(70px,9vh,90px);text-align:right;font-size:13px;color:#7d6d5c;transition:opacity .5s}
 .ctrl{position:absolute;left:0;right:0;bottom:20px;display:flex;gap:16px;align-items:center;justify-content:center;pointer-events:auto}
 .ctrl span{min-width:92px;padding:6px 12px;border-radius:999px;background:rgba(255,250,240,.82);text-align:center;white-space:nowrap;font:500 20px "Cormorant Garamond",serif;color:#4a3a28}
 .arr{width:48px;height:48px;border-radius:50%;border:1px solid var(--gold);background:rgba(255,250,240,.75);color:#5d4214;font-size:18px}
@@ -153,8 +161,13 @@ dialog::backdrop{background:rgba(43,33,24,.72)}
   <div class="stage" id="stage">
     <canvas id="gl" aria-label="Corridoio della galleria"></canvas>
     <div class="hud">
-      <div class="hint" id="hint">Scorri o trascina per camminare.<br>Clicca un quadro per avvicinarti.</div>
+      <div class="hint" id="hint">Scorri, trascina o usa le frecce per camminare.<br>Clicca un quadro per avvicinarti · Esc per uscire.</div>
       <a class="skip" id="skip" href="#sale">Vai all'elenco delle opere ↓</a>
+      <div class="enter" id="enter">
+        <button class="enter-btn" id="enterBtn">Entra nella galleria</button>
+        <small>Cammina tra le 21 opere · oppure scorri la pagina per continuare</small>
+      </div>
+      <button class="arr exit" id="exit" aria-label="Esci dalla galleria">×</button>
       <div class="ctrl">
         <button class="arr" id="prev" aria-label="Opera precedente">←</button>
         <span id="count" aria-live="polite">Ingresso</span>
@@ -263,10 +276,10 @@ const depth=i=>1400+i*GAP,side=i=>i%2?1:-1,END=depth(N-1)+1600,TILE=2420;
 const cams=[{c:0,y:0}];
 C.forEach((o,i)=>cams.push({c:depth(i)-FOC,y:-side(i)*Math.atan2(HALF,FOC)*.9}));
 cams.push({c:END-1300,y:0});
-hall.style.height=`calc(100svh + ${(N+1)*50}vh)`;
 const hint=document.getElementById("hint"),skip=document.getElementById("skip"),cnt=document.getElementById("count");
 const ss=t=>t*t*(3-2*t);
-const prog=()=>{const r=hall.getBoundingClientRect(),run=hall.offsetHeight-stage.offsetHeight;return Math.max(0,Math.min(1,-r.top/Math.max(1,run)))*(N+1)};
+let pos=0,tpos=0,active=false;const clampP=v=>Math.max(0,Math.min(N+1,v));
+const prog=()=>pos;
 let mx=0,my=0,lx=0,ly=0;
 const paintings=[];let renderer=null,scene,camera;
 const canvasTex=(w,h,draw)=>{const c=document.createElement("canvas");c.width=w;c.height=h;draw(c.getContext("2d"),w,h);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;return t};
@@ -344,6 +357,7 @@ async function build(){
 const size=()=>{document.documentElement.style.setProperty("--hh",document.querySelector("header").offsetHeight+"px");
  if(!renderer)return;const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=w/h<1?74:52;camera.updateProjectionMatrix()};
 const tick=()=>{
+ pos+=(tpos-pos)*.085;if(Math.abs(tpos-pos)<.0005)pos=tpos;
  const p=prog(),k=Math.min(N,Math.floor(p)),f=ss(p-k),A=cams[k],B=cams[Math.min(N+1,k+1)];
  lx+=(mx-lx)*.07;ly+=(my-ly)*.07;
  if(renderer){camera.position.set(0,0,-(A.c+(B.c-A.c)*f));camera.rotation.y=A.y+(B.y-A.y)*f-lx*.08;camera.rotation.x=-ly*.04;renderer.render(scene,camera)}
@@ -353,20 +367,27 @@ const tick=()=>{
 const ro=new ResizeObserver(size);ro.observe(stage);size();
 try{if(!window.THREE)throw 0;build().catch(e=>{console.error(e);stage.classList.add("nogl")})}catch(e){stage.classList.add("nogl")}
 requestAnimationFrame(tick);
-const goStep=n=>{n=Math.max(0,Math.min(N+1,n));const run=hall.offsetHeight-stage.offsetHeight;scrollTo({top:hall.offsetTop+run*n/(N+1),behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"})};
-const cur=()=>Math.round(prog());
+const goStep=n=>{tpos=clampP(Math.round(n))};
+const cur=()=>Math.round(tpos);
+const enterG=()=>{if(active)return;active=true;stage.classList.add("active");document.body.classList.add("gallery-open");size();document.getElementById("exit").focus({preventScroll:true})};
+const exitG=()=>{if(!active)return;active=false;stage.classList.remove("active","drag");document.body.classList.remove("gallery-open");tpos=0;size();hall.scrollIntoView({block:"start"})};
+document.getElementById("enterBtn").addEventListener("click",e=>{e.stopPropagation();enterG()});
+document.getElementById("exit").addEventListener("click",exitG);
 document.getElementById("prev").addEventListener("click",()=>goStep(cur()-1));
 document.getElementById("next").addEventListener("click",()=>goStep(cur()+1));
 const dlg=document.getElementById("dlg");
-addEventListener("keydown",e=>{const r=hall.getBoundingClientRect();if(dlg.open||r.bottom<200||r.top>200)return;if(e.key==="ArrowRight"){e.preventDefault();goStep(cur()+1)}if(e.key==="ArrowLeft"){e.preventDefault();goStep(cur()-1)}});
+addEventListener("keydown",e=>{if(!active||dlg.open)return;if(e.key==="Escape"){e.preventDefault();exitG();return}
+ if(e.key==="ArrowRight"||e.key==="ArrowDown"||e.key===" "){e.preventDefault();goStep(cur()+1)}if(e.key==="ArrowLeft"||e.key==="ArrowUp"){e.preventDefault();goStep(cur()-1)}});
+let snapT;const snapLater=()=>{clearTimeout(snapT);snapT=setTimeout(()=>{tpos=Math.round(tpos)},300)};
+stage.addEventListener("wheel",e=>{if(!active)return;e.preventDefault();tpos=clampP(tpos+(e.deltaY+e.deltaX)*(e.deltaMode?0.06:0.0024));snapLater()},{passive:false});
 const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
 const pick=e=>{if(!renderer)return null;const r=cv.getBoundingClientRect();ndc.set((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1));ray.setFromCamera(ndc,camera);const h=ray.intersectObjects(paintings,false)[0];return h?h.object.userData.i:null};
 stage.addEventListener("pointermove",e=>{const r=stage.getBoundingClientRect();mx=(e.clientX-r.left)/r.width*2-1;my=(e.clientY-r.top)/r.height*2-1;if(!dn&&e.pointerType==="mouse")cv.style.cursor=pick(e)!=null?"pointer":""});
 stage.addEventListener("pointerleave",()=>{mx=my=0});
 let dn=null,moved=false;
-stage.addEventListener("pointerdown",e=>{if(e.target.closest("a,.ctrl"))return;dn={x:e.clientX,y:e.clientY,t:e.pointerType};moved=false;if(e.pointerType==="mouse")stage.classList.add("drag")});
-addEventListener("pointermove",e=>{if(!dn)return;const dx=e.clientX-dn.x,dy=e.clientY-dn.y;if(Math.abs(dx)+Math.abs(dy)>6)moved=true;if(dn.t==="mouse"){scrollBy(0,(-dx-dy)*2.2);dn.x=e.clientX;dn.y=e.clientY}});
-addEventListener("pointerup",e=>{if(!dn)return;const wasMoved=moved;dn=null;stage.classList.remove("drag");if(!wasMoved&&e.target===cv){const i=pick(e);if(i!=null){show(i);try{dlg.showModal()}catch(_){dlg.setAttribute("open","")}}}});
+stage.addEventListener("pointerdown",e=>{if(e.target.closest("a,button"))return;dn={x:e.clientX,y:e.clientY,t:e.pointerType};moved=false;if(active&&e.pointerType==="mouse")stage.classList.add("drag")});
+addEventListener("pointermove",e=>{if(!dn)return;const dx=e.clientX-dn.x,dy=e.clientY-dn.y;if(Math.abs(dx)+Math.abs(dy)>6)moved=true;if(active){tpos=clampP(tpos+(-dx-dy)*(dn.t==="mouse"?.004:.006));dn.x=e.clientX;dn.y=e.clientY}});
+addEventListener("pointerup",e=>{if(!dn)return;const wasMoved=moved;dn=null;stage.classList.remove("drag");if(!active){if(!wasMoved&&e.target.closest("#stage"))enterG();return}if(wasMoved)snapLater();if(!wasMoved&&e.target===cv){const i=pick(e);if(i!=null){show(i);try{dlg.showModal()}catch(_){dlg.setAttribute("open","")}}}});
 
 // --- visore: avvicinarsi a un quadro ---
 let at=0;const NW=W.length;
