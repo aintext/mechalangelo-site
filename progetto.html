@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Il progetto — Mechalangelo</title>
+<link rel="icon" href="img/simbolo-oro.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* VOICE: un grande museo classico, quieto e raffinato; l'ironia mecha sta nelle opere, non nell'impaginazione.
+   IDEA: la galleria di una gipsoteca: pareti di gesso, lucernario, pavimento in marmo, quadri in cornici dorate.
+   PICTURE: il corridoio 3D in luce calda, percorso scorrendo; la camera si volta verso ogni quadro.
+   COLOUR and TYPE: avorio, gesso, travertino, oro brunito, inchiostro bruno; Cormorant Garamond + Jost.
+   LAYOUT: corridoio a tutto schermo, poi l'indice delle sale, il progetto, contatti. */
+:root{color-scheme:light dark;
+--bg:light-dark(#f7f0e4,#1f1a15);--ink:light-dark(#2b2118,#efe6d6);--mute:light-dark(#76685a,#b9ab98);
+--line:light-dark(#e2d6c4,#3a3128);--card:light-dark(#fffaf2,#29221b);--gold:#b08a3e;--gold2:#e7cd8a}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:72px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Jost,system-ui,sans-serif;overflow-x:clip}
+a{color:inherit}
+h1,h2,h3{font-family:"Cormorant Garamond",Georgia,serif;font-weight:600;line-height:1.05;text-wrap:balance;margin:0}
+h1{font-size:clamp(36px,5vw,52px)}
+h2{font-size:clamp(30px,3.8vw,44px);margin-bottom:16px}
+p{max-width:66ch}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.band{padding:clamp(36px,5vw,80px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top{display:flex;flex-wrap:wrap;gap:6px 28px;align-items:center;justify-content:space-between;padding:12px max(5vw,16px)}
+.logo{text-decoration:none;display:flex;align-items:center;gap:12px;color:var(--ink)}
+.logo .sym{height:30px;width:auto;color:var(--gold)}
+.logo .wm{display:block;height:13px;width:auto}
+.logo small{display:block;font:400 12px Jost,sans-serif;color:var(--mute);margin-top:5px;letter-spacing:.04em}
+nav{display:flex;flex-wrap:wrap;gap:0 22px}
+nav a{text-decoration:none;color:var(--mute);padding:10px 0}
+nav a:hover{color:var(--ink)}
+@media(max-width:600px){.top{padding-block:8px}nav{gap:0 14px}nav a{font-size:14px}}
+
+
+nav a[aria-current=page]{color:var(--ink)}
+footer{padding:24px max(5vw,16px);font-size:13px;color:var(--mute);border-top:1px solid var(--line)}
+ background:radial-gradient(ellipse at 50% 30%,light-dark(#fff8ea,#2c241c),transparent 70%)}
+
+.ph-hero{padding:clamp(48px,7vw,110px) max(5vw,16px) clamp(28px,4vw,56px);text-align:center;background:radial-gradient(ellipse at 50% 0,light-dark(#fff8ea,#2c241c),transparent 70%)}
+.ph-hero .sym{width:min(140px,36vw);height:auto;color:var(--gold);display:block;margin:0 auto 22px}
+.ph-hero h1{font-size:clamp(40px,6vw,64px);text-align:center;max-width:none}
+.ph-hero p{margin:16px auto 0;text-align:center;color:var(--mute);font-size:18px}
+.toc{position:sticky;top:var(--hh,60px);z-index:5;display:flex;justify-content:center;flex-wrap:wrap;gap:4px 26px;padding:12px 16px;background:color-mix(in srgb,var(--bg) 92%,transparent);border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+.toc a{font:600 14px Cinzel,serif;letter-spacing:.06em;text-decoration:none;color:var(--mute);padding:8px 0}
+.toc a:hover{color:var(--ink)}
+.ch{padding:clamp(40px,6vw,96px) max(5vw,16px);border-bottom:1px solid var(--line)}
+.ch:nth-of-type(even){background:light-dark(#f1e8d9,#261f19)}
+.ch .wrap{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.6fr);gap:clamp(20px,5vw,80px)}
+.ch h2{font:600 clamp(30px,3.6vw,42px)/1.1 Cinzel,serif;letter-spacing:.03em}
+.ch .kicker{display:block;margin-top:10px;color:var(--mute);font-style:italic;font-family:"Cormorant Garamond",serif;font-size:21px}
+.ch p{margin:0 0 16px;font-size:17px}
+.tools{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:12px}
+.tools li{padding:14px 16px;background:var(--card);border:1px solid var(--line)}
+.tools b{display:block;font:600 14px Cinzel,serif;letter-spacing:.04em;margin-bottom:4px}
+.tools span{font-size:14px;color:var(--mute)}
+.flow{list-style:none;margin:0;padding:0;counter-reset:f}
+.flow li{position:relative;padding:0 0 22px 34px;border-left:1px solid var(--gold);margin-left:8px}
+.flow li:last-child{padding-bottom:0}
+.flow li::before{content:"";position:absolute;left:-6px;top:6px;width:11px;height:11px;border-radius:50%;background:var(--gold)}
+.flow b{display:block;font:600 15px Cinzel,serif;letter-spacing:.04em}
+.facts2{list-style:none;margin:6px 0 0;padding:0;border-top:1px solid var(--gold)}
+.facts2 li{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}
+.facts2 span{color:var(--mute)}.facts2 b{font-weight:500;text-align:right}
+.note{font-size:13px;color:var(--mute);text-align:center;padding:18px}
+@media(max-width:780px){.ch .wrap{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <a class="logo" href="index.html"><svg class="sym" aria-hidden="true" fill="currentColor" viewBox="20 150 554 274"><path d="M571.1,153.7c-4.9,6.4-10.5,12-15.9,18-12.9,14.5-25.9,28.8-38.9,43.2-1.2,1.3-2.5,2.3-4.1,2.9-27.5,10.3-55,20.7-82.5,31-2,.7-3.5,1.7-4.8,3.5-34.6,46.3-69.2,92.6-103.8,138.9-7,9.3-13.9,18.7-20.8,28.2-1.6,2.2-2.3,2.1-3.9,0-19.7-26.4-39.4-52.9-59.2-79.2-22.2-29.6-44.6-59.2-66.8-88.8-1-1.3-2.2-1.9-3.6-2.5-28-10.5-56-21-84.1-31.4-1.6-.6-2.8-1.4-3.9-2.7-17.6-19.6-35.3-39.1-52.9-58.7-.7-.8-1.3-2-2.5-2.3h0c1.1-1.4,2.1-.2,3.1.1,32.5,10.2,65,20.5,97.5,30.9,21.9,7,43.7,14.2,65.6,21.2,1.6.5,2.5,1.4,3.4,2.6,34.4,45.1,68.2,90.6,103.4,135.1,1.6,2.1,2.2,2.5,4.1.1,35-44.7,69.3-89.8,103.1-135.3.8-1.1,1.6-1.8,3-2.2,53.1-17.2,106.3-34.4,159.4-51.6,1.6-.5,3.2-1.6,5-1h0Z"/><path d="M246.2,398.3c-20.2-10.2-40.4-20.4-60.6-30.6-1-.5-1.7-1.2-2.4-2.1-26.5-36-53-72-79.6-108-4.5-6.1-9-12.1-13.2-18.7,7.6,2.9,15.3,5.8,22.9,8.7,13.3,5.1,26.5,10.1,39.8,15.2,1.3.5,2.4,1.1,3.3,2.3,19.4,27.7,39,55.2,58.1,83,10.8,15.8,20.9,32,31.3,48.1.3.4.4.9.7,1.4-.1.1-.3.3-.4.4Z"/><path d="M349.8,398.4c5-7.8,10-15.4,14.9-23.1,23.4-37.2,49.7-72.5,74.6-108.7,1.3-1.8,2.7-3,4.9-3.8,19-7.3,38-14.7,57-22.1.6-.2,1.2-.5,1.8-.7.4,0,.9-.1,1.2.1.5.4,0,.9-.2,1.4-.7,1-1.3,2-2,2.9-29.1,40.5-58.7,80.5-88.4,120.6-.9,1.2-1.8,2.3-3.2,3-19.4,9.9-38.8,19.9-58.2,29.9-.6.3-1.1,1-2.3.6Z"/></svg><span><svg class="wm" role="img" aria-label="Mechalangelo" fill="currentColor" viewBox="28.1 464.5 538.6 30.5"><path d="M28.2,464.7h9.7l13,15c8.6-10,12.9-15,12.9-15h9.7c0,0,.1,0,.1.1v30.1c0,0,0,.1-.1.1h-9.5c0,0-.1,0-.1-.1v-17.9l-13,15.1h-.1c0,0-4.4-5-13.1-15.1v17.9c0,0,0,.1-.1.1h-9.4c0,0-.1,0-.1-.1v-30.1c0,0,0-.1.1-.1Z"/><path d="M76.6,464.7h41.5c0,0,.1,0,.1.1v6.9c0,0,0,.1-.1.1h-41.5c0,0-.1,0-.1-.1v-6.9c0,0,0-.1.1-.1ZM76.6,476.6h41.5c0,0,.1,0,.1.1v6.3c0,0,0,.1-.1.1h-41.5c0,0-.1,0-.1-.1v-6.3c0,0,0-.1.1-.1ZM76.6,487.9h41.5c0,0,.1,0,.1.1v6.9c0,0,0,.1-.1.1h-41.5c0,0-.1,0-.1-.1v-6.9c0,0,0-.1.1-.1Z"/><path d="M130.1,464.7h32.1c0,0,.1,0,.1.1v6.9c0,0,0,.1-.1.1h-26.9c-2.4,0-4.1,1.3-4.9,4,0,.5,0,.8,0,1.1v5.9c0,2.2,1.1,3.8,3.3,4.7.5.2,1,.3,1.6.3h26.9c0,0,.1,0,.1.1v6.9c0,0,0,.1-.1.1h-31.9c-3.3,0-6.1-1.3-8.2-4-.9-1.4-1.4-2.8-1.4-4.2v-14.2c0-2.5,1.4-4.6,4.2-6.5,1.8-1,3.6-1.5,5.2-1.5Z"/><path d="M164.8,464.7h9.4c0,0,.1,0,.1.1v11.8h22.3v-11.8c0,0,0-.1.1-.1h9.5c0,0,.1,0,.1.1v30.1c0,0,0,.1-.1.1h-9.5c0,0-.1,0-.1-.1v-11.8h-22.3v11.8c0,0,0,.1-.1.1h-9.4c0,0-.1,0-.1-.1v-30.1c0,0,0-.1.1-.1Z"/><path d="M226.5,464.7h9.7c.2.2,2.2,3.5,6,9.9,7.7,13,11.7,19.8,12,20.4h0c0,0-11.2,0-11.2,0-.3-.3-3.7-6.1-10.3-17.4-.8-1.4-1.2-2-1.3-2-7.5,12.7-11.3,19.1-11.5,19.4h-11.2c11.5-19.6,17.4-29.7,17.9-30.4Z"/><path d="M256.4,464.7h9.4c0,0,.1,0,.1.1v23.1h31.9c0,0,.1,0,.1.1v6.9c0,0,0,.1-.1.1h-41.5c0,0-.1,0-.1-.1v-30.1c0,0,0-.1.1-.1Z"/><path d="M318.1,464.7h9.7c.2.2,2.2,3.5,6,9.9,7.7,13,11.7,19.8,12,20.4h0c0,0-11.2,0-11.2,0-.3-.3-3.7-6.1-10.3-17.4-.8-1.4-1.2-2-1.3-2-7.5,12.7-11.3,19.1-11.5,19.4h-11.2c11.5-19.6,17.4-29.7,17.9-30.4Z"/><path d="M348,464.7h32.2c2.9,0,5.5,1.2,7.8,3.7,1.1,1.5,1.6,3,1.6,4.4v22.1c0,0,0,.1-.1.1h-9.5c0,0-.1,0-.1-.1v-17.6c0-2.7-1.2-4.4-3.5-5.2-.5-.1-1-.2-1.5-.2h-17.3v23c0,0,0,.1-.1.1h-9.4c0,0-.1,0-.1-.1v-30.1c0,0,0-.1.1-.1Z"/><path d="M401.6,464.7h32.1c0,0,.1,0,.1.1v6.9c0,0,0,.1-.1.1h-26.9c-2.3,0-3.9,1.2-4.8,3.7,0,.5-.1.9-.1,1.1v6.2c0,2.2,1.1,3.8,3.3,4.7.5.2,1,.3,1.6.3h17.3v-5.6c0,0,0-.1.1-.1h9.5c0,0,.1,0,.1.1v12.6c0,0,0,.1-.1.1h-31.9c-2.9,0-5.5-1.1-7.7-3.3-1.3-1.5-2-3.2-2-5v-13.8c0-3.1,1.8-5.5,5.3-7.3,1.5-.6,2.9-1,4.2-1Z"/><path d="M436.6,464.7h41.5c0,0,.1,0,.1.1v6.9c0,0,0,.1-.1.1h-41.5c0,0-.1,0-.1-.1v-6.9c0,0,0-.1.1-.1ZM436.6,476.6h41.5c0,0,.1,0,.1.1v6.3c0,0,0,.1-.1.1h-41.5c0,0-.1,0-.1-.1v-6.3c0,0,0-.1.1-.1ZM436.6,487.9h41.5c0,0,.1,0,.1.1v6.9c0,0,0,.1-.1.1h-41.5c0,0-.1,0-.1-.1v-6.9c0,0,0-.1.1-.1Z"/><path d="M481.1,464.7h9.4c0,0,.1,0,.1.1v23.1h31.9c0,0,.1,0,.1.1v6.9c0,0,0,.1-.1.1h-41.5c0,0-.1,0-.1-.1v-30.1c0,0,0-.1.1-.1Z"/><path d="M534.3,464.7h22.6c3.4,0,6.2,1.3,8.3,3.9,1,1.4,1.5,2.9,1.5,4.4v13.7c0,3.1-1.7,5.5-5.2,7.3-1.5.7-3,1-4.6,1h-22.3c-3.3,0-6.1-1.3-8.2-4-.9-1.3-1.4-2.7-1.4-4.2v-13.9c0-3.2,1.9-5.7,5.7-7.5,1.5-.5,2.7-.8,3.7-.8ZM534.6,476.9v6c0,2.5,1.3,4.1,3.8,4.9.4,0,.7.1,1.1.1h12.5c2.2,0,3.8-1.2,4.7-3.5.1-.3.2-.8.2-1.4v-5.8c0-2.6-1.2-4.3-3.6-5.2-.7,0-1.3-.1-1.8-.1h-11.9c-2.3,0-3.9,1.2-4.8,3.5-.1.5-.2,1-.2,1.4Z"/></svg><small>un progetto di Giuseppe Suma</small></span></a>
+  <nav aria-label="Sezioni"><a href="index.html">La galleria</a><a href="index.html#sale">Le opere</a><a href="progetto.html" aria-current="page">Il progetto</a><a href="shop.html">Shop</a></nav>
+</div></header>
+<main>
+<section class="ph-hero">
+  <svg class="sym" aria-hidden="true" fill="currentColor" viewBox="20 150 554 274"><path d="M571.1,153.7c-4.9,6.4-10.5,12-15.9,18-12.9,14.5-25.9,28.8-38.9,43.2-1.2,1.3-2.5,2.3-4.1,2.9-27.5,10.3-55,20.7-82.5,31-2,.7-3.5,1.7-4.8,3.5-34.6,46.3-69.2,92.6-103.8,138.9-7,9.3-13.9,18.7-20.8,28.2-1.6,2.2-2.3,2.1-3.9,0-19.7-26.4-39.4-52.9-59.2-79.2-22.2-29.6-44.6-59.2-66.8-88.8-1-1.3-2.2-1.9-3.6-2.5-28-10.5-56-21-84.1-31.4-1.6-.6-2.8-1.4-3.9-2.7-17.6-19.6-35.3-39.1-52.9-58.7-.7-.8-1.3-2-2.5-2.3h0c1.1-1.4,2.1-.2,3.1.1,32.5,10.2,65,20.5,97.5,30.9,21.9,7,43.7,14.2,65.6,21.2,1.6.5,2.5,1.4,3.4,2.6,34.4,45.1,68.2,90.6,103.4,135.1,1.6,2.1,2.2,2.5,4.1.1,35-44.7,69.3-89.8,103.1-135.3.8-1.1,1.6-1.8,3-2.2,53.1-17.2,106.3-34.4,159.4-51.6,1.6-.5,3.2-1.6,5-1h0Z"/><path d="M246.2,398.3c-20.2-10.2-40.4-20.4-60.6-30.6-1-.5-1.7-1.2-2.4-2.1-26.5-36-53-72-79.6-108-4.5-6.1-9-12.1-13.2-18.7,7.6,2.9,15.3,5.8,22.9,8.7,13.3,5.1,26.5,10.1,39.8,15.2,1.3.5,2.4,1.1,3.3,2.3,19.4,27.7,39,55.2,58.1,83,10.8,15.8,20.9,32,31.3,48.1.3.4.4.9.7,1.4-.1.1-.3.3-.4.4Z"/><path d="M349.8,398.4c5-7.8,10-15.4,14.9-23.1,23.4-37.2,49.7-72.5,74.6-108.7,1.3-1.8,2.7-3,4.9-3.8,19-7.3,38-14.7,57-22.1.6-.2,1.2-.5,1.8-.7.4,0,.9-.1,1.2.1.5.4,0,.9-.2,1.4-.7,1-1.3,2-2,2.9-29.1,40.5-58.7,80.5-88.4,120.6-.9,1.2-1.8,2.3-3.2,3-19.4,9.9-38.8,19.9-58.2,29.9-.6.3-1.1,1-2.3.6Z"/></svg>
+  <h1>Il progetto</h1>
+  <p>Come nasce un'opera Mechalangelo: dalla scatola di montaggio al dipinto digitale.</p>
+</section>
+<nav class="toc" aria-label="Capitoli"><a href="#genesi">Genesi</a><a href="#strumenti">Strumenti</a><a href="#workflow">Workflow</a><a href="#risultato">Risultato</a></nav>
+
+<section class="ch" id="genesi"><div class="wrap">
+  <div><h2>Genesi</h2><span class="kicker">Due infanzie che si incontrano</span></div>
+  <div>
+    <p>Giuseppe Suma nasce a Padova nel 1977 e cresce circondato da model kit e robot giapponesi. A cinque anni finisce il primo rullino fotografando le sue costruzioni, a undici gira i primi cortometraggi. Poi arrivano la musica, lo studio di registrazione AinteXt, la laurea in Tecnologie Multimediali a Bologna e il lavoro come fotografo, videomaker e post-produttore.</p>
+    <p>Mechalangelo Project nasce nel 2022 come punto d'incontro di tutte queste strade: i robot degli anni '70 e '80 (Goldrake, Mazinga, Jeeg, Daitarn, Getter, Gundam) entrano nelle pose e nelle composizioni dei grandi capolavori, da Michelangelo a Caravaggio, da Leonardo a Canova. Due memorie collettive, Oriente e Occidente, nella stessa immagine.</p>
+  </div>
+</div></section>
+
+<section class="ch" id="strumenti"><div class="wrap">
+  <div><h2>Strumenti</h2><span class="kicker">Mani, plastica, luce, pixel</span></div>
+  <div>
+    <ul class="tools">
+      <li><b>Model kit</b><span>Robot montati, modificati e messi in posa a mano.</span></li>
+      <li><b>Stampa 3D</b><span>Parti, pose e cornici modellate e stampate su misura.</span></li>
+      <li><b>Aerografo e pennello</b><span>Pittura dei modelli e finiture a mano.</span></li>
+      <li><b>Fotografia</b><span>Set e luci costruiti sul quadro di riferimento.</span></li>
+      <li><b>Pittura digitale</b><span>Sfondi ricostruiti e resa pittorica finale.</span></li>
+      <li><b>Intelligenza artificiale</b><span>Uno strumento in più, che supporta il processo creativo senza sostituirlo.</span></li>
+    </ul>
+  </div>
+</div></section>
+
+<section class="ch" id="workflow"><div class="wrap">
+  <div><h2>Workflow</h2><span class="kicker">Dall'opera di riferimento alla stampa</span></div>
+  <div>
+    <ol class="flow">
+      <li><b>Studio dell'originale</b>Composizione, pose, luce e proporzioni del capolavoro di partenza.</li>
+      <li><b>Scelta dei robot</b>Quali personaggi possono interpretare quelle figure, e perché.</li>
+      <li><b>Modellismo e posa</b>Montaggio, modifiche, parti stampate in 3D e posa del gesto.</li>
+      <li><b>Fotografia</b>Shooting in studio con l'illuminazione dell'opera originale.</li>
+      <li><b>Ricostruzione dello sfondo</b>L'ambiente del quadro rifatto in digitale attorno ai robot.</li>
+      <li><b>Post-produzione pittorica</b>Il passaggio che trasforma la foto in dipinto digitale.</li>
+      <li><b>Stampa e firma</b>Tiratura limitata su SmartX, D-bond o supporto materico, numerata e firmata.</li>
+    </ol>
+  </div>
+</div></section>
+
+<section class="ch" id="risultato"><div class="wrap">
+  <div><h2>Risultato</h2><span class="kicker">Opere, mostre, edizioni</span></div>
+  <div>
+    <p>Ogni opera è un dipinto digitale stampato in edizione limitata, con certificato di autenticità. Il progetto conta oggi 21 opere nelle serie Masterpieces e Multiverse.</p>
+    <ul class="facts2">
+      <li><span>Mostra personale</span><b>CEC Cecina, agosto–settembre 2025, a cura di Alessandro Schiavetti</b></li>
+      <li><span>Catalogo</span><b>Mechalangelo Project, ISBN 979-12-82316-00-2</b></li>
+      <li><span>Esposizioni</span><b>ART CITY Bologna 2026 · Arte Genova 2026 · ArtePadova 2026 · collettiva "Ecosistemi artificiali", Arezzo 2026</b></li>
+      <li><span>Tirature</span><b>9 esemplari per formato; materiche in 3 o 5 esemplari</b></li>
+    </ul>
+  </div>
+</div></section>
+<p class="note">Testi in bozza, da rivedere.</p>
+</main>
+<footer>© Giuseppe Suma — AinteXt · Mechalangelo Project. Le opere di riferimento appartengono ai rispettivi autori; i robot ai rispettivi titolari.</footer>
+<script>document.documentElement.style.setProperty("--hh",document.querySelector("header").offsetHeight+"px")</script>
+</body>
+</html>
