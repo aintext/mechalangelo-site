@@ -437,7 +437,7 @@ async function lookAt(i){if(busy)return;busy=true;
  await wait(450);seat.classList.remove("instant");blink.classList.remove("opening")
  }finally{busy=false;stage.classList.remove("looking")}}
 // modello 3D (se WebGL non c'è resta la figura fotografica)
-import("./js/visitatore3d.js").then(m=>m.createVisitor(cv3,"img/visitatore.glb")).then(api=>{v3=api;v3.resize(vw,H);vis.hidden=true}).catch(e=>{console.warn("visitatore 3D non disponibile",e);cv3.hidden=true});
+import("./js/visitatore3d.js").then(m=>m.createVisitor(cv3,"img/visitatore.json")).then(api=>{v3=api;v3.resize(vw,H);vis.hidden=true}).catch(e=>{console.warn("visitatore 3D non disponibile",e);cv3.hidden=true});
 // vista in prima persona davanti al quadro, con due livelli di ingrandimento
 const seat=document.getElementById("seat"),seatArt=document.getElementById("seatArt");let sAt=0,seatT=0;
 function seatShow(i){sAt=(i+W.length)%W.length;const w=W[sAt],q=P.find(q=>q.i===sAt),p={fr:q.fr==="liscio"?"oro":q.fr},a=arv(w.ar),nar=innerWidth<760;
