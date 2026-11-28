@@ -331,29 +331,30 @@ const FR={
  cassetta:{n:"A cassetta con perline",S:270,T:180,o:1},
  ottocentesca:{n:"Ottocentesca in pastiglia",S:340,T:230,o:1}};
 for(const k in FR)FR[k].u=`img/cornici/${k}.webp`;
-// parete: tre misure di tela (altezza in cm) e spessore della cornice; gruppi centrati sui cinque quadri grandi.
-// Ogni voce: [opera, misura B/M/S, cornice]. Con tele da 75 cm in su e la fascia libera tra 100 e 255 cm
-// non c'e' spazio per impilare due quadri: la quadreria e' una fascia sola, sfalsata in altezza.
-const HT={B:110,M:90,S:75},BK={B:15,M:11.5,S:9.5};
+// parete a patchwork: ogni pannello ha un quadro grande al centro, alto quanto due file,
+// e ai lati colonne di due quadri (fila alta e fila bassa) di due misure diverse.
+// Misure di tela (altezza in cm): B grande, M media, S piccola; BK = spessore base della cornice.
+const HT={B:120,M:54,S:45},BK={B:15,M:8,S:7};
+// pannello: [colonna sinistra | null, quadro grande, colonna destra | null]; colonna = [in alto, in basso]
 const GR=[
- [["pieta","S","salvator"],["discobolo","M","cassetta"],["creazione","B","luigi15"],["viandante","M","fiorentina"]],
- [["legacy","S","olandese"],["jeegonda","B","barocca"],["optimus","M","luigi14"],["santagata","S","salvator"]],
- [["nettuno","S","luigi15"],["perseo","M","olandese"],["ultima-cena","B","luigi14"],["venus","M","fiorentina"],["arcangeli","S","cassetta"]],
- [["fuga","M","ottocentesca"],["goldrake-vega","B","olandese"],["gladiatori","S","fiorentina"],["ercole","M","barocca"]],
- [["tank-man","S","salvator"],["dream","M","cassetta"],["bacio","B","ottocentesca"],["fab-four","S","luigi15"]]];
-const CY=172,GAP=26,CL=96;
+ [[["pieta","M","salvator"],["discobolo","S","cassetta"]],["creazione","luigi15"],[["viandante","S","fiorentina"],["legacy","M","olandese"]]],
+ [[["optimus","S","luigi14"],["santagata","M","ottocentesca"]],["jeegonda","barocca"],[["nettuno","M","luigi15"],["perseo","S","olandese"]]],
+ [null,["ultima-cena","luigi14"],[["venus","M","fiorentina"],["arcangeli","S","cassetta"]]],
+ [[["fuga","S","ottocentesca"],["gladiatori","M","salvator"]],["goldrake-vega","olandese"],null],
+ [[["tank-man","M","salvator"],["dream","S","barocca"]],["bacio","ottocentesca"],[["ercole","S","fiorentina"],["fab-four","M","cassetta"]]]];
+const AX=182,ROW=6,GAP=22,CL=52;// asse tra le due file (cm da terra), mezzo spazio tra le file, spazi
 const P=[],GC=[];let WW=0,END=0;
 const piece=(id,sz,fr)=>{const i=IDX[id],a=arv(W[i].ar),h=HT[sz],b=BK[sz]*FR[fr].T/200;return{i,b,fr,sz,w:h*a+2*b,h:h+2*b}};
-const place=(p,x,cy)=>{p.x=x;p.y=cy+p.h/2;P.push(p)};
-// su schermi stretti niente titolo all'inizio: la parete parte subito dai quadri
+const place=(p,x,top)=>{p.x=x;p.y=top;P.push(p)};
 function build(start,end){P.length=0;GC.length=0;END=end;let X=start;
-GR.forEach((g,k)=>{const x0=X,ps=g.map(([id,sz,fr])=>piece(id,sz,fr)),bi=g.findIndex(e=>e[1]==="B");
- ps.forEach((p,j)=>{const d=Math.abs(j-bi),sd=Math.sign(j-bi),pat=(k%2?1:-1)*sd;
-  // grande al centro visivo; i laterali salgono e scendono a turno (quadreria sfalsata)
-  const off=d?(d%2?1:-1)*pat*(p.sz==="S"?13:9):0;
-  place(p,X,CY+off);X+=p.w+(j<ps.length-1?GAP+(d===0||j+1===bi?8:0):0)});
- GC.push((x0+X)/2);X+=CL});
-WW=X-CL+END}
+ GR.forEach(([L,B,R])=>{const x0=X;
+  const col=c=>{const[t,b]=c.map(([id,sz,fr])=>piece(id,sz,fr)),w=Math.max(t.w,b.w);
+   place(t,X+(w-t.w)/2,AX+ROW+t.h);place(b,X+(w-b.w)/2,AX-ROW);X+=w+GAP};
+  if(L)col(L);
+  const g=piece(B[0],"B",B[1]);place(g,X,AX+g.h/2);X+=g.w+GAP;
+  if(R)col(R);
+  X-=GAP;GC.push((x0+X)/2);X+=CL});
+ WW=X-CL+END}
 build(320,210);
 // costruzione della parete
 const mk=(c,h)=>{const e=document.createElement("div");e.className=c;if(h)e.innerHTML=h;wall.appendChild(e);return e};
