@@ -44,7 +44,7 @@ nav a:hover{color:var(--ink)}
 /* ---------- parete museale ---------- */
 .hall{position:relative;background:#e9e4da}
 .stage{position:relative;height:640px;overflow:hidden;user-select:none;-webkit-user-select:none;background:#efebe4}
-.scroller{position:absolute;inset:0;overflow-x:auto;overflow-y:hidden;touch-action:pan-y;scrollbar-width:none;overscroll-behavior-x:contain;cursor:grab;outline:none}
+.scroller{position:absolute;inset:0;overflow-x:hidden;overflow-y:hidden;touch-action:pan-y;scrollbar-width:none;overscroll-behavior-x:contain;cursor:grab;outline:none}
 .scroller::-webkit-scrollbar{display:none}
 .scroller.drag{cursor:grabbing}
 .wall{position:relative;height:100%;overflow:clip}
@@ -82,7 +82,8 @@ nav a:hover{color:var(--ink)}
 .vis{position:absolute;bottom:0;overflow:hidden;will-change:transform;transition:height .7s ease,bottom .7s ease}
 .vis img{position:absolute;left:0;top:0;width:100%;height:auto;display:block}
 .vis::after{content:"";position:absolute;left:8%;right:8%;bottom:-6px;height:16px;border-radius:50%;background:radial-gradient(closest-side,rgba(30,20,10,.45),transparent)}
-.vshadow{position:absolute;bottom:0;height:18px;border-radius:50%;background:radial-gradient(closest-side,rgba(30,20,10,.42),transparent);will-change:transform}
+.v3{position:absolute;inset:0;width:100%;height:100%;display:block}
+.vshadow{position:absolute;left:0;bottom:0;height:18px;border-radius:50%;background:radial-gradient(closest-side,rgba(30,20,10,.42),transparent);will-change:transform}
 /* comandi */
 .nav{position:absolute;top:44%;z-index:3;width:54px;height:54px;font-size:20px;background:rgba(255,252,246,.86);box-shadow:0 6px 18px -8px rgba(60,40,20,.5)}
 .nav.prev{left:max(2vw,10px)}.nav.next{right:max(2vw,10px)}
@@ -196,10 +197,12 @@ dialog::backdrop{background:rgba(43,33,24,.72)}
       <div class="wall" id="wall"></div>
     </div>
     <div class="fg" aria-hidden="true">
+      <div class="vshadow" id="vsh"></div>
       <div class="vis" id="vis"><img src="img/visitatore.png" alt=""></div>
+      <canvas class="v3" id="v3"></canvas>
     </div>
     </div>
-    <div class="whint" id="whint">Trascina per far camminare il visitatore · clicca un quadro per guardarlo</div>
+    <div class="whint" id="whint">Frecce o trascinamento per camminare · clicca un quadro per guardarlo</div>
     <button class="arr nav prev" id="prev" aria-label="Sposta a sinistra">←</button>
     <button class="arr nav next" id="next" aria-label="Sposta a destra">→</button>
     <div class="track" aria-hidden="true"><i id="trk"></i></div>
@@ -340,7 +343,6 @@ build(320,210);
 // costruzione della parete
 const mk=(c,h)=>{const e=document.createElement("div");e.className=c;if(h)e.innerHTML=h;wall.appendChild(e);return e};
 const plaster=mk("plaster"),glows=P.map(()=>mk("glow")),dado=mk("dado"),rail=mk("rail"),skirt=mk("skirt");
-dado.style.backgroundImage=`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 88' preserveAspectRatio='none'%3E%3Crect x='13' y='13' width='124' height='60' fill='none' stroke='%23d6cfc2' stroke-width='1.4'/%3E%3Crect x='15' y='15' width='120' height='56' fill='none' stroke='%23fffefa' stroke-width='1.1'/%3E%3C/svg%3E")`;
 const intro=mk("intro",`<img src="img/scritta.svg" alt="Mechalangelo"><small>un progetto di Giuseppe Suma · ${W.length} opere</small>`);
 const outro=mk("outro",`<a href="#sale">Tutte le opere in elenco ↓</a>`);
 const fEls=P.map(p=>{const w=W[p.i],b=document.createElement("button");b.className="af";b.dataset.w=p.i;
@@ -377,50 +379,56 @@ function layout(){
  // primo piano
  mh=H*(small?.44:.54);mw=mh*164/552;manB=H*.02;
  Object.assign(vis.style,{width:mw+"px",height:mh+"px",bottom:manB+"px"});
- if(mx==null)mx=vw/2;
+ if(X==null){X=TX=lim(vw/2/s)}
+ vsh.style.width=mh*.36+"px";if(v3)v3.resize(vw,H);
  sc.scrollLeft=frac*(sc.scrollWidth-sc.clientWidth);
 }
-// visitatore: si trascina lo schermo e lui cammina in quella direzione; la parete lo segue
-let mx=null,vel=0,lastSL=0,phase=0,bob=0,inView=true,fling=0;
-function frame(){requestAnimationFrame(frame);if(!inView)return;
- if(!dr&&Math.abs(fling)>.3){sc.scrollLeft+=fling;fling*=.93}else if(!dr)fling=0;
- const sl=sc.scrollLeft,max=sc.scrollWidth-sc.clientWidth,d=sl-lastSL;lastSL=sl;vel=vel*.86+d*.14;
+// visitatore: ha una posizione X sulla parete (cm) e la camera lo segue.
+// Ogni freccia = 2 passi (un ciclo completo di camminata); trascinando, va dove va il dito; da fermo si volta verso i quadri.
+const STEP2=164,VWALK=170,ACC=520;// cm, cm/s (velocità a cui i piedi non scivolano), cm/s²
+let X=null,TX=null,v=0,vmax=VWALK,inView=true,last=0,v3=null,arrive=null,turnErr=0,phase=0,bob=0;
+const vsh=document.getElementById("vsh"),cv3=document.getElementById("v3");
+const lim=x=>Math.max(55,Math.min(WW-55,x));
+function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,last?(now-last)/1000:0);last=now;if(!inView||X==null)return;
+ const dist=TX-X,want=Math.sign(dist)*Math.min(vmax,Math.sqrt(2*ACC*.9*Math.abs(dist)));
+ v+=Math.max(-ACC*dt,Math.min(ACC*dt,want-v));
+ if(Math.abs(dist)<.6&&Math.abs(v)<10){v=0;X=TX}else X=lim(X+v*dt);
+ const max=sc.scrollWidth-sc.clientWidth,sl=Math.max(0,Math.min(max,X*s-vw/2));sc.scrollLeft=sl;
  fp.style.backgroundPosition=`${-sl+vw*.6}px 0`;
- const tx=vw/2+Math.max(-vw*.17,Math.min(vw*.17,vel*16));
- const dx=(tx-mx)*.075;mx+=dx;const sp=Math.max(Math.abs(dx),Math.abs(vel)*.25);let rot=0;
- if(sp>.2){phase+=Math.min(sp,7)*.11;bob=Math.abs(Math.sin(phase))*mh*.012;rot=Math.sin(phase)*1.1}else bob*=.8;
- vis.style.transform=`translate3d(${mx-mw/2}px,${-bob}px,0) rotate(${rot}deg)`;
+ const sx=X*s-sl,yawT=Math.abs(v)>12?(v>0?Math.PI/2:-Math.PI/2):Math.PI;
+ if(v3)turnErr=v3.update(sx,manB,mh,v/180,yawT,dt);
+ else{turnErr=0;const sp=Math.abs(v);if(sp>5){phase+=sp*dt*.035;bob=Math.abs(Math.sin(phase*Math.PI))*mh*.012}else bob*=.8;
+  vis.style.transform=`translate3d(${sx-mw/2}px,${-bob}px,0)`}
+ vsh.style.transform=`translate3d(${sx-mh*.18}px,${-manB+6}px,0)`;
  const tw=Math.min(100,vw/(WW*s)*100);trk.style.width=tw+"%";trk.style.left=(max>0?sl/max:0)*(100-tw)+"%";
- bPrev.disabled=sl<=2;bNext.disabled=sl>=max-2}
+ bPrev.disabled=TX<=56;bNext.disabled=TX>=WW-56;
+ if(arrive&&v===0&&X===TX&&turnErr<.06){const f=arrive;arrive=null;f()}}
 new IntersectionObserver(es=>{inView=es[0].isIntersecting},{rootMargin:"100px"}).observe(stage);
 const touched=()=>{whint.style.opacity=0};
-bPrev.addEventListener("click",()=>{touched();sc.scrollBy({left:-sc.clientWidth*.6,behavior:"smooth"})});
-bNext.addEventListener("click",()=>{touched();sc.scrollBy({left:sc.clientWidth*.6,behavior:"smooth"})});
-sc.addEventListener("keydown",e=>{if(e.key.startsWith("Arrow")||e.key==="Home"||e.key==="End")touched()});
-sc.addEventListener("wheel",e=>{if(Math.abs(e.deltaX)>Math.abs(e.deltaY))touched()},{passive:true});
-// trascinamento (mouse e dito): il visitatore va dove va il dito, quindi la parete scorre nello stesso verso
+const steps=d=>{if(busy)return;touched();vmax=VWALK;TX=lim(TX+d*STEP2)};
+bPrev.addEventListener("click",()=>steps(-1));bNext.addEventListener("click",()=>steps(1));
+sc.addEventListener("keydown",e=>{if(e.key==="ArrowRight"){e.preventDefault();steps(1)}if(e.key==="ArrowLeft"){e.preventDefault();steps(-1)}});
+sc.addEventListener("wheel",e=>{if(Math.abs(e.deltaX)<=Math.abs(e.deltaY)||busy)return;e.preventDefault();touched();vmax=VWALK*1.6;TX=lim(TX+e.deltaX/s)},{passive:false});
+// trascinamento (mouse e dito): il visitatore va dove va il dito
 let dr=null,moved=false;
-sc.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button!==0)return;dr={x:e.clientX,sl:sc.scrollLeft,lx:e.clientX,t:performance.now(),v:0};moved=false;fling=0});
+sc.addEventListener("pointerdown",e=>{if(busy||(e.pointerType==="mouse"&&e.button!==0))return;dr={x:e.clientX,tx:TX};moved=false});
 addEventListener("pointermove",e=>{if(!dr)return;const dx=e.clientX-dr.x;if(!moved&&Math.abs(dx)>6){moved=true;touched();sc.classList.add("drag");try{sc.setPointerCapture(e.pointerId)}catch(_){}}
- if(moved){const now=performance.now();dr.v=(e.clientX-dr.lx)/Math.max(8,now-dr.t)*16*1.5;dr.lx=e.clientX;dr.t=now;sc.scrollLeft=dr.sl+dx*1.5}});
-addEventListener("pointerup",()=>{if(dr&&moved)fling=dr.v;dr=null;sc.classList.remove("drag")});
+ if(moved){vmax=VWALK*2.3;TX=lim(dr.tx+dx*1.4/s)}});
+addEventListener("pointerup",()=>{dr=null;sc.classList.remove("drag")});
 addEventListener("pointercancel",()=>{dr=null;sc.classList.remove("drag")});
 sc.addEventListener("dragstart",e=>e.preventDefault());
-// clic su un quadro: si apre la vista dagli occhi del visitatore
+// clic su un quadro: ci cammina davanti, si volta, la camera gli va alle spalle, battito di ciglia e vista dai suoi occhi
 sc.addEventListener("click",e=>{const b=e.target.closest(".af");if(!b)return;if(moved){moved=false;return}touched();lookAt(+b.dataset.w)});
-// transizione: la parete porta il quadro al centro, il visitatore ci arriva sotto, la camera gli va alle spalle,
-// poi un battito di ciglia e si vede il quadro con i suoi occhi
 const cam=document.getElementById("cam"),blink=document.getElementById("blink");
 const wait=ms=>new Promise(r=>setTimeout(r,ms));let busy=false;
 async function lookAt(i){if(busy)return;busy=true;
- const calm=matchMedia("(prefers-reduced-motion:reduce)").matches;
+ const calm=matchMedia("(prefers-reduced-motion:reduce)").matches,p=P.find(q=>q.i===i);
  stage.classList.add("looking");
  try{
- if(!calm){const p=P.find(q=>q.i===i),max=sc.scrollWidth-sc.clientWidth,to=Math.max(0,Math.min(max,(p.x+p.w/2)*s-vw/2));
-  fling=0;sc.scrollTo({left:to,behavior:"smooth"});
-  for(let t0=performance.now();performance.now()-t0<1600;){await wait(50);if(Math.abs(sc.scrollLeft-to)<2&&Math.abs(vel)<1)break}
-  const pc=PH-(p.y-p.h/2)*s,head=H-manB-mh,ox=vw/2,oy=(head+pc)/2+mh*.08;
-  cam.style.transformOrigin=`${ox}px ${oy}px`;cam.style.transition="transform 1.1s cubic-bezier(.45,0,.25,1)";cam.style.transform="scale(1.75)";
+ if(!calm){TX=lim(p.x+p.w/2);vmax=Math.min(560,Math.max(VWALK,Math.abs(TX-X)/1.4));
+  await Promise.race([new Promise(r=>arrive=r),wait(6000)]);arrive=null;
+  const sx=X*s-sc.scrollLeft,pc=PH-(p.y-p.h/2)*s,head=H-manB-mh,oy=(head+pc)/2+mh*.08;
+  cam.style.transformOrigin=`${sx}px ${oy}px`;cam.style.transition="transform 1.1s cubic-bezier(.45,0,.25,1)";cam.style.transform="scale(1.75)";
   await wait(1000)}
  blink.classList.remove("opening");blink.classList.add("shut");await wait(260);
  seat.classList.add("instant");openSeat(i);seat.classList.add("on");
@@ -428,6 +436,8 @@ async function lookAt(i){if(busy)return;busy=true;
  await wait(140);blink.classList.add("opening");blink.classList.remove("shut");
  await wait(450);seat.classList.remove("instant");blink.classList.remove("opening")
  }finally{busy=false;stage.classList.remove("looking")}}
+// modello 3D (se WebGL non c'è resta la figura fotografica)
+import("./js/visitatore3d.js").then(m=>m.createVisitor(cv3,"img/visitatore.glb")).then(api=>{v3=api;v3.resize(vw,H);vis.hidden=true}).catch(e=>{console.warn("visitatore 3D non disponibile",e);cv3.hidden=true});
 // vista in prima persona davanti al quadro, con due livelli di ingrandimento
 const seat=document.getElementById("seat"),seatArt=document.getElementById("seatArt");let sAt=0,seatT=0;
 function seatShow(i){sAt=(i+W.length)%W.length;const w=W[sAt],q=P.find(q=>q.i===sAt),p={fr:q.fr==="liscio"?"oro":q.fr},a=arv(w.ar),nar=innerWidth<760;
