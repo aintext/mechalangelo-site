@@ -161,7 +161,7 @@ dialog::backdrop{background:rgba(43,33,24,.72)}
   <div class="stage" id="stage">
     <canvas id="gl" aria-label="Corridoio della galleria"></canvas>
     <div class="hud">
-      <div class="hint" id="hint">Rotella, swipe o frecce: un’opera alla volta.<br>Clicca un quadro per raggiungerlo o aprirlo · Esc per uscire.</div>
+      <div class="hint" id="hint">Scorri o trascina per camminare.<br>Clicca un quadro per aprirlo · Esc per uscire.</div>
       <a class="skip" id="skip" href="#sale">Vai all'elenco delle opere ↓</a>
       <div class="enter" id="enter">
         <button class="enter-btn" id="enterBtn">Entra nella galleria</button>
@@ -273,17 +273,20 @@ document.querySelectorAll(".chips button").forEach(b=>b.addEventListener("click"
 
 // --- corridoio 3D (WebGL, three.js): lo scroll fa camminare, la camera si volta verso ogni quadro ---
 const hall=document.getElementById("corridoio"),stage=document.getElementById("stage"),cv=document.getElementById("gl");
-const C=W.map((w,i)=>({w,i})).filter(o=>HAS.has(o.w.id)),N=C.length,HALF=560,FLOOR=-520,CEIL=560,GAP=820,FH=400,FOC=980;
-const depth=i=>1400+i*GAP,side=i=>i%2?1:-1,END=depth(N-1)+1600,TILE=2420;
+const C=W.map((w,i)=>({w,i})).filter(o=>HAS.has(o.w.id)),N=C.length,HALF=560,FLOOR=-520,CEIL=560,GAP=900,FH=400,FOC=980;
+const depth=i=>1400+i*GAP,side=i=>1,END=depth(N-1)+1600,TILE=2420;
 const cams=[{c:0,y:0}];
 C.forEach((o,i)=>cams.push({c:depth(i)-FOC,y:-side(i)*Math.atan2(HALF,FOC)*.9}));
 cams.push({c:END-1300,y:0});
 const hint=document.getElementById("hint"),skip=document.getElementById("skip"),cnt=document.getElementById("count");
 const ss=t=>t*t*(3-2*t);
 // visita guidata: ogni gesto avvia UN movimento fluido verso la tappa successiva (o verso il quadro cliccato)
-let step=0,camC=0,camY=0,anim=null,active=false;const clampS=v=>Math.max(0,Math.min(N+1,v));
-const stepOf={};C.forEach((o,k)=>stepOf[o.i]=k+1);
-const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+// scorrimento lineare: la rotella/il trascinamento spostano un obiettivo, la camera lo insegue con morbidezza
+// tutti i quadri sulla parete destra, la camera cammina un po' a sinistra guardando in diagonale verso di loro
+const YAW=-.5,CX=-260,AHEAD=(HALF-CX)/Math.tan(-YAW);
+const focusOf=k=>depth(k)-AHEAD,MAXP=END-1500,clampP=v=>Math.max(0,Math.min(MAXP,v));
+let pos=0,target=0,active=false;
+const nearest=v=>{let b=0,d=1e9;C.forEach((o,k)=>{const x=Math.abs(focusOf(k)-v);if(x<d){d=x;b=k}});return b};
 const prog=()=>step;
 let mx=0,my=0,lx=0,ly=0;
 const paintings=[];let renderer=null,scene,camera;
@@ -361,22 +364,20 @@ async function build(){
 }
 const size=()=>{document.documentElement.style.setProperty("--hh",document.querySelector("header").offsetHeight+"px");
  if(!renderer)return;const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=w/h<1?74:52;camera.updateProjectionMatrix()};
-const tick=now=>{
- if(anim){const t=Math.min(1,(now-anim.t0)/anim.d),e=ease(t);camC=anim.c0+(anim.c1-anim.c0)*e;camY=anim.y0+(anim.y1-anim.y0)*e;if(t>=1){step=anim.to;anim=null}}
+const tick=()=>{
+ pos+=(target-pos)*.075;if(Math.abs(target-pos)<.05)pos=target;
  lx+=(mx-lx)*.06;ly+=(my-ly)*.06;
- if(renderer){camera.position.set(0,0,-camC);camera.rotation.y=camY-lx*.07;camera.rotation.x=-ly*.035;renderer.render(scene,camera)}
- const shown=anim?anim.to:step,o=shown<1?1:0;hint.style.opacity=skip.style.opacity=o;
- cnt.textContent=shown<1?"Ingresso":shown>N?"Fine":`${shown} / ${N}`;
+ if(renderer){camera.position.set(CX,0,-pos);camera.rotation.y=YAW-lx*.08;camera.rotation.x=-ly*.035;renderer.render(scene,camera)}
+ const k=nearest(pos);hint.style.opacity=skip.style.opacity=pos<focusOf(0)-300?1:0;
+ cnt.textContent=pos<focusOf(0)-450?"Ingresso":pos>focusOf(N-1)+450?"Fine":`${k+1} / ${N}`;
  requestAnimationFrame(tick)};
 const ro=new ResizeObserver(size);ro.observe(stage);size();
 try{if(!window.THREE)throw 0;build().catch(e=>{console.error(e);stage.classList.add("nogl")})}catch(e){stage.classList.add("nogl")}
 requestAnimationFrame(tick);
-const goStep=n=>{n=clampS(n);if(anim||n===step)return;const d=Math.abs(n-step);
- if(matchMedia("(prefers-reduced-motion:reduce)").matches){step=n;camC=cams[n].c;camY=cams[n].y;return}
- anim={t0:performance.now(),d:Math.min(1300+260*(d-1),2800),c0:camC,y0:camY,c1:cams[n].c,y1:cams[n].y,to:n}};
-const cur=()=>anim?anim.to:step;
+const goStep=n=>{n=Math.max(0,Math.min(N+1,n));target=n<1?0:n>N?MAXP:clampP(focusOf(n-1))};
+const cur=()=>target<focusOf(0)-450?0:target>focusOf(N-1)+450?N+1:nearest(target)+1;
 const enterG=()=>{if(active)return;active=true;stage.classList.add("active");document.body.classList.add("gallery-open");size();document.getElementById("exit").focus({preventScroll:true})};
-const exitG=()=>{if(!active)return;active=false;stage.classList.remove("active","drag");document.body.classList.remove("gallery-open");anim=null;step=0;camC=0;camY=0;size();hall.scrollIntoView({block:"start"})};
+const exitG=()=>{if(!active)return;active=false;stage.classList.remove("active","drag");document.body.classList.remove("gallery-open");pos=target=0;size();hall.scrollIntoView({block:"start"})};
 document.getElementById("enterBtn").addEventListener("click",e=>{e.stopPropagation();enterG()});
 document.getElementById("exit").addEventListener("click",exitG);
 document.getElementById("prev").addEventListener("click",()=>goStep(cur()-1));
@@ -384,23 +385,17 @@ document.getElementById("next").addEventListener("click",()=>goStep(cur()+1));
 const dlg=document.getElementById("dlg");
 addEventListener("keydown",e=>{if(!active||dlg.open)return;if(e.key==="Escape"){e.preventDefault();exitG();return}
  if(e.key==="ArrowRight"||e.key==="ArrowDown"||e.key===" "){e.preventDefault();goStep(cur()+1)}if(e.key==="ArrowLeft"||e.key==="ArrowUp"){e.preventDefault();goStep(cur()-1)}});
-// un gesto = una tappa: la rotella (anche l'inerzia dei trackpad) conta come nuovo gesto solo dopo una pausa
-let wAcc=0,wLast=0,wUsed=false;
-stage.addEventListener("wheel",e=>{if(!active)return;e.preventDefault();const now=performance.now();
- if(now-wLast>300){wUsed=false;wAcc=0}wLast=now;if(wUsed||anim)return;
- wAcc+=(e.deltaMode?30:1)*(e.deltaY+e.deltaX);
- if(Math.abs(wAcc)>40){goStep(cur()+(wAcc>0?1:-1));wUsed=true;wAcc=0}},{passive:false});
+stage.addEventListener("wheel",e=>{if(!active)return;e.preventDefault();target=clampP(target+(e.deltaY+e.deltaX)*(e.deltaMode?40:1)*2.2)},{passive:false});
 const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
 const pick=e=>{if(!renderer)return null;const r=cv.getBoundingClientRect();ndc.set((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1));ray.setFromCamera(ndc,camera);const h=ray.intersectObjects(paintings,false)[0];return h?h.object.userData.i:null};
 stage.addEventListener("pointermove",e=>{const r=stage.getBoundingClientRect();mx=(e.clientX-r.left)/r.width*2-1;my=(e.clientY-r.top)/r.height*2-1;if(!dn&&e.pointerType==="mouse")cv.style.cursor=pick(e)!=null?"pointer":""});
 stage.addEventListener("pointerleave",()=>{mx=my=0});
 let dn=null,moved=false;
-stage.addEventListener("pointerdown",e=>{if(e.target.closest("a,button"))return;dn={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,t:e.pointerType};moved=false;if(active&&e.pointerType==="mouse")stage.classList.add("drag")});
-addEventListener("pointermove",e=>{if(!dn)return;const dx=e.clientX-dn.x,dy=e.clientY-dn.y;if(Math.abs(dx)+Math.abs(dy)>6)moved=true;});
-addEventListener("pointerup",e=>{if(!dn)return;const wasMoved=moved,sx=e.clientX-dn.x0,sy=e.clientY-dn.y0;dn=null;stage.classList.remove("drag");
+stage.addEventListener("pointerdown",e=>{if(e.target.closest("a,button"))return;dn={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,t:e.pointerType,t0:target};moved=false;if(active&&e.pointerType==="mouse")stage.classList.add("drag")});
+addEventListener("pointermove",e=>{if(!dn)return;const dx=e.clientX-dn.x0,dy=e.clientY-dn.y0;if(Math.abs(dx)+Math.abs(dy)>6)moved=true;if(active&&moved)target=clampP(dn.t0-(Math.abs(dx)>Math.abs(dy)?dx:dy)*(dn.t==="mouse"?3:4.5))});
+addEventListener("pointerup",e=>{if(!dn)return;const wasMoved=moved;dn=null;stage.classList.remove("drag");
  if(!active){if(!wasMoved&&e.target.closest("#stage"))enterG();return}
- if(wasMoved){const m=Math.abs(sx)>Math.abs(sy)?-sx:-sy;if(Math.abs(m)>40)goStep(cur()+(m>0?1:-1));return}
- if(e.target===cv&&!anim){const i=pick(e);if(i==null)return;const k=stepOf[i];if(k!==step){goStep(k);return}show(i);try{dlg.showModal()}catch(_){dlg.setAttribute("open","")}}});
+ if(!wasMoved&&e.target===cv){const i=pick(e);if(i==null)return;show(i);try{dlg.showModal()}catch(_){dlg.setAttribute("open","")}}});
 
 // --- visore: avvicinarsi a un quadro ---
 let at=0;const NW=W.length;
